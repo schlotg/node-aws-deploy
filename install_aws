@@ -1,0 +1,34 @@
+#######################################################################################
+# Before you run this do the following:
+#	sudo su
+#	vi /etc/sudoers
+#   	<scroll down and find the secure_path line>
+#   	<hit <i> and insert the following ':/usr/local/bin' at the end of the path>
+#   	<hit <esc> and type ':wq!'
+#	exit
+# This allows 'n' and 'node' to run as sudo
+######################################################################################
+
+# update the base system
+sudo yum update
+
+# install everything needed to get and compile n
+sudo yum install gcc-c++ make
+sudo yum install openssl-devel
+sudo yum install git
+
+# clone n and install it
+git clone git://github.com/visionmedia/n.git
+cd n
+sudo make install
+
+# Install the latest stable node version using n (npm now comes with node)
+# 	To change versions to a specify one type sudo n x.xx.xx
+cd ..
+sudo n stable
+sudo npm install -g nodemon
+cd ~/
+// clone node-aws-deploy and run the install
+sudo git clone git@github.com:schlotg/node-aws-deploy.git
+cd node-aws-delpoy
+sudo node install.js

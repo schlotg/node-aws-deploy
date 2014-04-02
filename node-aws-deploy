@@ -1,0 +1,75 @@
+#######################################################################################
+# Before you run this do the following:
+#	sudo su
+#	vi /etc/sudoers
+#   	<scroll down and find the secure_path line>
+#   	<hit <i> and insert the following ':/usr/local/bin' at the end of the path>
+#   	<hit <esc> and type ':wq!'
+#	exit
+# This allows 'n' and 'node' to run as sudo
+######################################################################################
+
+# update the base system
+sudo yum update
+
+# install everything needed to get and compile n
+sudo yum install gcc-c++ make
+sudo yum install openssl-devel
+sudo yum install git
+
+# clone n and install it
+git clone git://github.com/visionmedia/n.git
+cd n
+sudo make install
+
+# Install the latest stable node version using n (npm now comes with node)
+# 	To change versions to a specify one type sudo n x.xx.xx
+cd ..
+sudo n stable
+sudo npm install -g nodemon
+echo "Enter the full path your node application will be installed to:"
+read _nodepath
+sudo rm -f -r $_nodepath
+sudo mkdir $_nodepath
+sudo chmod 777 $_nodepath
+
+#setup an upstart script to launch node-deploy
+echo "
+#!upstart
+description \"Node Deploy\"
+author \"none-aws-deploy\"
+env APP_PATH=\"$_nodepath\"
+env ENTRY=\"_start.js\"
+start on started mountall
+stop on shutdown
+respawn
+respawn limit 99 5
+script
+        cd \$APP_PATH
+        sudo mkdir \$APP_PATH/logs/
+        exec sudo nodemon \$APP_PATH/\$ENTRY >> /\$APP_PATH/logs/log 2>&1
+end script" >> node-deploy.conf
+sudo chmod 644 node-deploy.conf
+sudo mv node-deploy.conf /etc/init/node-deploy.conf
+############################################################
+# kick it off once and it will always run on server start
+#	To start it:   sudo start node-deploy
+#	To stop it:    sudo stop node-deploy
+#	To restart it: sudo restart node-deploy
+############################################################
+echo "Generating an SSH key, Enter your email address and than"
+echo "just press <enter> for the rest of the questions:"
+read _email
+ssh-keygen -t rsa -C "$_email"
+ssh-add ~/.ssh/id_rsa
+echo
+cat ~/.ssh/id_rsa.pub
+echo
+echo "Please copy the ssh key above and then paste into the your git repository account’s allowed keys This will allow this machine access for pulls and cloning. Once that is done, enter the ssh repository url for your provider and press return:"
+read _git_url
+cd $_nodepath
+cd ..
+git clone $_git_url
+mkdir $_nodepath/logs
+sudo chmod 777 $_nodepath/logs
+echo "Please go edit the $_nodepath/app-config.json for settings specific to your app. To start the server type: sudo start node-deploy."

@@ -1,0 +1,9 @@
+.idea
+.idea/*
+.DS_Store
+.DS_Store?
+logs/*
+node_modules/*
+package.copy
+tmp_files/*
+dump/*

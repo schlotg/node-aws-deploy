@@ -1,0 +1,2 @@
+// Installs the whole setup
+

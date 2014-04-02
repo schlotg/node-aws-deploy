@@ -1,0 +1,29 @@
+{
+    "name": "node-aws-deploy",
+    "version": "0.5.0",
+    "description": "Deploy Node quickly and easily to AWS Linux instances",
+    "main": "_start.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "aws-sdk":""
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/schlotg/node-aws-deploy.git"
+    },
+    "keywords": [
+        "Node",
+        "Nodejs",
+        "deploy",
+        "AWS",
+        "EC2"
+    ],
+    "author": "Greg Schlottmann",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/schlotg/node-aws-deploy/issues"
+    },
+    "homepage": "https://github.com/schlotg/node-aws-deploy"
+}
