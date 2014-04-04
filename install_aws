@@ -22,6 +22,7 @@ cd /root/
 git clone git://github.com/visionmedia/n.git
 cd n
 sudo make install
+cd /root/
 
 # Install the latest stable node version using n (npm now comes with node)
 # 	To change versions to a specify one type sudo n x.xx.xx
@@ -53,4 +54,5 @@ sudo mv node-aws-deploy.conf /etc/init/node-aws-deploy.conf
 echo "UpStart Entry Complete..."
 
 # launch the installer for configuring your app
+cd /root/node-aws-deploy
 sudo node install.js
