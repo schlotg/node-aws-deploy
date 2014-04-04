@@ -21,7 +21,7 @@ async.waterfall ([
         done ();
     },
     function (done){
-        rl.question("1) Enter your application's full path. (Path only, no file names. Example  '\MyCoolApplication'):", function(answer) {
+        rl.question("1) Enter your application's folder. (Path only relative to the current directory, no file names. Example  'MyCoolApplication'):", function(answer) {
             fs.mkdirSync (answer, function (err){
                 app_path = anwer;
                 rl.close();
@@ -44,7 +44,7 @@ async.waterfall ([
         });
     },
     function (done){
-        // got get the ssh key or create one if it doesn't exist
+        // go get the ssh key or create one if it doesn't exist
         try { ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");}
         catch (err) {ssh_file = null;}
         if (!ssh_file){
@@ -66,7 +66,7 @@ async.waterfall ([
         });
     },
     function (done){
-        rl.question("5) Now that your Git repository has been configured to allow access, enter the ssh url for remote access so this server can clone it:" , function(answer) {
+        rl.question("5) Now that your Git repository has been configured, enter the ssh url for remote access so this server can clone it:" , function(answer) {
             git_url = answer;
             if (git_url){
                 console.log ("  Cloning your repository...");
@@ -89,7 +89,12 @@ async.waterfall ([
         });
     },
 ], function (err){
-    console.log ("Done! err: " + err);
+    if (!err){
+        console.log ("Success");
+    }
+    else{
+        console.log ("There were errors. Errors:" + err);
+    }
 });
 
 
