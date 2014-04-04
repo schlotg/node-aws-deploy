@@ -29,7 +29,7 @@ sudo n stable
 sudo npm install -g nodemon
 
 #setup an upstart script to launch node-aws-deploy
-echo "Creating UpStart Entry
+echo "Creating UpStart Entry"
 
 echo "
 #!upstart
