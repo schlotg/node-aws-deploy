@@ -53,7 +53,7 @@ sudo mv node-aws-deploy.conf /etc/init/node-aws-deploy.conf
 echo "UpStart Entry Complete..."
 
 
-// clone node-aws-deploy and run the install
+# clone node-aws-deploy and run the install
 echo "Creating the node-aws-deploy directory on '/'"
 cd /
 sudo mkdir node-aws-deploy
