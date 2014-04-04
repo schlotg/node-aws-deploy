@@ -27,12 +27,11 @@ sudo make install
 cd ..
 sudo n stable
 sudo npm install -g nodemon
-sudo mkdir /node-aws-deploy
-sudo chmod 777 /node-aws-deploy
 
 #setup an upstart script to launch node-aws-deploy
-echo "
+echo "Creating UpStart Entry
 
+echo "
 #!upstart
 description \"Node Deploy\"
 author \"none-aws-deploy\"
@@ -51,9 +50,14 @@ end script
 " >> node-aws-deploy.conf
 sudo chmod 644 node-aws-deploy.conf
 sudo mv node-aws-deploy.conf /etc/init/node-aws-deploy.conf
+echo "UpStart Entry Complete..."
+
 
 // clone node-aws-deploy and run the install
+echo "Creating the node-aws-deploy directory on '/'"
 cd /
+sudo mkdir node-aws-deploy
+sudo chmod 777 node-aws-deploy
 git clone git@github.com:schlotg/node-aws-deploy.git
 cd node-aws-delpoy
 sudo node install.js
