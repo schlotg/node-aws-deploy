@@ -58,6 +58,6 @@ echo "Creating the node-aws-deploy directory on '/'"
 cd /
 sudo mkdir node-aws-deploy
 sudo chmod 777 node-aws-deploy
-git clone git@github.com:schlotg/node-aws-deploy.git
+sudo git clone git@github.com:schlotg/node-aws-deploy.git
 cd node-aws-delpoy
 sudo node install.js
