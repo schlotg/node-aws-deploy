@@ -28,7 +28,7 @@ cd ..
 sudo n stable
 sudo npm install -g nodemon
 sudo mkdir /node-aws-deploy
-sudo chmod 777 /node-aws-deploy
+#sudo chmod 777 /node-aws-deploy
 
 #setup an upstart script to launch node-aws-deploy
 echo "
