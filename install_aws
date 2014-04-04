@@ -25,7 +25,6 @@ sudo make install
 
 # Install the latest stable node version using n (npm now comes with node)
 # 	To change versions to a specify one type sudo n x.xx.xx
-cd ..
 sudo n stable
 sudo npm install -g nodemon
 
