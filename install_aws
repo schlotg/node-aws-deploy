@@ -27,8 +27,33 @@ sudo make install
 cd ..
 sudo n stable
 sudo npm install -g nodemon
-cd ~/
+sudo mkdir /node-aws-deploy
+sudo chmod 777 /node-aws-deploy
+
+#setup an upstart script to launch node-aws-deploy
+echo "
+
+#!upstart
+description \"Node Deploy\"
+author \"none-aws-deploy\"
+env APP_PATH=\"/node-aws-deploy\"
+env ENTRY=\"_start.js\"
+start on started mountall
+stop on shutdown
+respawn
+respawn limit 99 5
+script
+        cd \$APP_PATH
+        sudo mkdir \$APP_PATH/logs/
+        exec sudo nodemon \$APP_PATH/\$ENTRY >> /\$APP_PATH/logs/log 2>&1
+end script
+
+" >> node-aws-deploy.conf
+sudo chmod 644 node-aws-deploy.conf
+sudo mv node-aws-deploy.conf /etc/init/node-aws-deploy.conf
+
 // clone node-aws-deploy and run the install
-sudo git clone git@github.com:schlotg/node-aws-deploy.git
+cd /
+git clone git@github.com:schlotg/node-aws-deploy.git
 cd node-aws-delpoy
 sudo node install.js
