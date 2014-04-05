@@ -9,23 +9,26 @@
  'app-config.json' allows you to configure following properties for your
  application:
 
- "working_directory": <set this to the directory you application lives in>
- "app_entry": <set this to the name of the 'js' file that is your entry point>
 
- "pull_port": <set this to the port for a pull requests> - defaults to 8000
+
+"applicationName:" <name of the application>
+ "applicationDirectory": <set this to the directory you application lives in>
+ "appEntry": <set this to the name of the 'js' file that is your entry point>
+
+ "pullPort": <set this to the port for a pull requests> - defaults to 8000
 
  // The key and cert files are only necessary if you want to listen for a pull
  // request securely. If they are omitted and HTTP server is start instead. Beware
  // as someone could be snooping and then start sending your servers pull requests
- "pull_key": <path to a ssh key file for the HTTPS Server>
- "pull_cert": <path to a ssh cert file for the HTTPS Server>
- "pull_ca": <array of paths to the certificate authority files> (optional)
- "pull_passphrase" : <string - phrase that the certificate was generated with> (optional if certificate was not generated with a passphrase)
+ "pullKey": <path to a ssh key file for the HTTPS Server>
+ "pullCert": <path to a ssh cert file for the HTTPS Server>
+ "pullCa": <array of paths to the certificate authority files> (optional)
+ "pullPassphrase" : <string - phrase that the certificate was generated with> (optional if certificate was not generated with a passphrase)
 
  // This is a secret key that is configured here and passed in via a webhook in
  // response to a pull request. This is to prevent unauthorized requests from causing
  // pulls. If no pull secret is configure then all pull request are valid
- "pull_secret": <secret phrase>
+ "pullSecret": <secret phrase>
 
  "branch": <git branch to use for the pull>
 
@@ -36,12 +39,6 @@
  "secretAccessKey": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
  "region": "us-east-1"
 
-
- // This allows you to have the same codebase but turn off updating in certain production
- // environments.
- "off_key_pair": <key:value pair that when matched in the instance data turns off pulling>
-
- "aws_ignore:" <key:value pair that when set prevents any action> (useful for production servers)
  "sudo": <Mac and Linux only, should we prefix all shell commands with sudo?> - defaults to no sudo
 
  // To Trigger a pull and restart
@@ -64,9 +61,8 @@
     // This an abstraction layer for different cloud services
     // all AWS specific code or other cloud vendor stuff should go in here
     var cloud = require ("./cloud.js");
-    var updating_on = true;
+    var updating_on = false;
     var sudo;
-    var in_pull = false;
     var instance_data;
 
 
@@ -141,7 +137,7 @@
                 var instances = cloud.getInstances (function (instances){
                     instances && instances.forEach (function (instance){
                         if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
-                            post (instance.dns, req,body, config.pull_port, secure, url.format (req.query));
+                            post (instance.dns, req,body, config.pullPort, secure, url.format (req.query));
                         }
                     });
                     // now pull and restart ourselves
@@ -261,9 +257,9 @@
     }
     // start the application
     function startApp (){
-        var app_entry = config.app_entry || "start.js";
-        console.log ("\nSTARTING APPLICATION CALLING: " + app_entry);
-        require ('./' + app_entry);
+        var appEntry = config.appEntry || "start.js";
+        console.log ("\nSTARTING APPLICATION CALLING: " + appEntry);
+        require ('./' + appEntry);
     }
 
     /////////////////// CODE EXECUTION STARTS HERE ///////////////////////////
@@ -295,17 +291,13 @@
         console.log ("  Instance Data:%j", instance_data);
 
         // see if updating should be on or off
-        if (instance_data && config.off_key_pair){
-            var key = Object.keys(config.off_key_pair)[0];
-            var val = config.off_key_pair[key];
-            if (instance_data[key] === val){
-                updating_on = false;
-            }
+        if (instance_data && instance_data.deploy === true){
+            updating_on = true;
         }
 
         // change directory to the app working directory. Default to the current directory
-        var working_directory = config.working_directory || process.cwd();
-        process.chdir (working_directory);
+        var workingDirectory = config.workingDirectory || process.cwd();
+        process.chdir (workingDirectory);
         console.log ("\nSetting Working Directory to:" + process.cwd());
 
         // determine if we are in the could or not and set an environment variable
@@ -356,12 +348,13 @@
             if (req.url.search ("/pull") !== -1){ // handle a command to pull
                 var valid_request = true;
                 parseURL (req);
-                if (config.pull_secret){
-                    valid_request = (req.query.secret == config.pull_secret) ? true : false;
+                if (config.pullSecret){
+                    valid_request = (req.query.secret == config.pullSecret) ? true : false;
                 }
                 if (valid_request){
                     bodyParser (req, res, function (){
-                        if (req.body.ref.search (config.branch) !== -1){
+                        var listensTo = (instance_data && instance_data.listensTo) ? instance_data.listensTo : "";
+                        if (req.body.ref.search (listensTo) !== -1){
                             pull (function (){
                                 res.writeHead(200, {'Content-Type': 'text/plain'});
                                 if (pull_error){ res.end("Pull Accepted. There were Errors:" + pull_error); }
@@ -385,8 +378,8 @@
                     res.end("Pull Not Authorized");
                     console.log ("\nPull Not Authorized @" + date.toString ());
                     console.log ("	Secret passed in:" + !!params.secret);
-                    console.log ("	Secret required:" + !!config.pull_secret);
-                    console.log ("	Secrets Match:" + (config.pull_secret === params.secret));
+                    console.log ("	Secret required:" + !!config.pullSecret);
+                    console.log ("	Secrets Match:" + (config.pullSecret === params.secret));
                 }
             }
             else{
@@ -394,12 +387,12 @@
                 res.end("Not Found");
             }
         }
-        if (updating_on || true){
-            var http_port = (config.pull_port || 8000), key, cert, options;
-            if (config.pull_key && config.pull_cert){
-                try {key = fs.readFileSync (config.pull_key);}
+        if (updating_on){
+            var http_port = (config.pullPort || 8000), key, cert, options;
+            if (config.pullKey && config.pullCert){
+                try {key = fs.readFileSync (config.pullKey);}
                 catch (err) {key = null;}
-                try {cert = fs.readFileSync (config.pull_cert);}
+                try {cert = fs.readFileSync (config.pullCert);}
                 catch (err) {cert = null;}
                 if (key && cert) {
                     options = {key:key, cert:cert,
@@ -407,12 +400,12 @@
                     honorCipherOrder: true
                     };
                 }
-                if (options && config.pull_passphrase){
-                    options.passphrase = config.pull_passphrase;
+                if (options && config.pullPassphrase){
+                    options.passphrase = config.pullPassphrase;
                 }
-                if (options && config.pull_ca && config.pull_ca.length){
+                if (options && config.pullCa && config.pullCa.length){
                     var ca = [];
-                    config.pull_ca.forEach (function (_ca){
+                    config.pullCa.forEach (function (_ca){
                         try {__ca = fs.readFileSync (_ca, {encoding: "aascii"});}
                         catch (err) {__ca = null;}
                         if (__ca){ ca.push (__ca);}

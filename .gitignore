@@ -4,6 +4,6 @@
 .DS_Store?
 logs/*
 node_modules/*
-package.copy
 tmp_files/*
 dump/*
+app-config.json
