@@ -2,10 +2,9 @@
 var fs = require('fs');
 var exec = require ('child_process').exec;
 var async = require ("async");
-var app_path, ssh_file, git_url, app_entry, local;
+var app_path, ssh_file, local, email;
 var i = 0;
 var prompt = require ("prompt");
-var local;
 var config = {};
 
 async.waterfall ([
@@ -77,31 +76,35 @@ async.waterfall ([
         if (!local){
             console.log (++i + ") Enter your email address to seed the ssh key");
             prompt.get (['email'], function(err, results) {
-                var email = results['email'];
-                // go get the ssh key or create one if it doesn't exist
-                try { ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");}
-                catch (err) {ssh_file = null; console.log (err);}
-                if (!ssh_file){
-                    console.log ("/tssh key not generated, generating a new one.");
-                    var child = exec ('sudo ssh-keygen -t rsa -C "' + email + '"', function (err, std, ster){
-console.log ("debug here: err:%j, std:%j, ster:%j", err, std, ster);                        
-                        if (err){done (err);}
-                        else{
-                            ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");
-                            done ();
-                        }
-                    });
-                }
-                else{
-                    console.log ("/tssh key already generated!");
-                    done ();
-                }
+                email = results['email'];
             });
         }
         else{
             done ();
         }
     },
+
+    function (done){
+        // go get the ssh key or create one if it doesn't exist
+        try { ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");}
+        catch (err) {ssh_file = null; console.log (err);}
+        if (!ssh_file){
+            console.log ("/tssh key not generated, generating a new one.");
+            var child = exec ('sudo ssh-keygen -t rsa -C "' + email + '"', function (err, std, ster){
+console.log ("debug here: err:%j, std:%j, ster:%j", err, std, ster);
+                if (err){done (err);}
+                else{
+                    ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");
+                    done ();
+                }
+            });
+        }
+        else{
+            console.log ("/tssh key already generated!");
+            done ();
+        }
+    },
+
     function (done){
         if (!local){
             console.log(++i + ") Please take a second to copy the ssh key from this server, listed below, and paste into your git repository service (such as github). This will authorize this server AMI to " +
