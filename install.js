@@ -92,7 +92,8 @@ async.waterfall ([
             catch (err) {ssh_file = null; console.log (err);}
             if (!ssh_file){
                 console.log ("/tssh key not generated, generating a new one.");
-                var child = exec ('ssh-keygen -t rsa -C "' + email + '"', function (err, std, ster){
+console.log ('ssh-keygen -t rsa -C "' + email + '"');
+                var child = exec ('echo HELLO', function (err, std, ster){
 console.log ("debug here: err:%j, std:%j, ster:%j", err, std, ster);
                     if (err){done (err);}
                     else{
