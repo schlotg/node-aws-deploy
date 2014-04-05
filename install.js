@@ -31,7 +31,7 @@ async.waterfall ([
     },
 
     function (done){
-        console.log (++i + ") Enter your desired application's full path. (no file names. Example  '/root/MyCoolApplication')");
+        console.log (++i + ") Enter your desired application's full path. (no file names. Example  '/home/ec2-user//MyCoolApplication')");
         prompt.get (['folder'], function (err, results){
             var answer = results['folder'];
             config.applicationDirectory = answer;
@@ -80,8 +80,9 @@ async.waterfall ([
                 var email = results['email'];
                 // go get the ssh key or create one if it doesn't exist
                 try { ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");}
-                catch (err) {ssh_file = null;}
+                catch (err) {ssh_file = null; console.log (err);}
                 if (!ssh_file){
+                    console.log ("/tssh key not generated, generating a new one.");
                     var child = exec ('sudo ssh-keygen -t rsa -C "' + email + '"', function (err, std, ster){
                         if (err){done (err);}
                         else{
@@ -90,7 +91,10 @@ async.waterfall ([
                         }
                     });
                 }
-                done ();
+                else{
+                    console.log ("/tssh key already generated!");
+                    done ();
+                }
             });
         }
         else{
