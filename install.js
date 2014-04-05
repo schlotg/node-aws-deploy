@@ -5,7 +5,7 @@ var async = require ("async");
 var app_path, ssh_file, git_url, app_entry, local;
 var i = 0;
 var prompt = require ("prompt");
-var local
+var local;
 var config = {};
 
 async.waterfall ([
@@ -25,6 +25,7 @@ async.waterfall ([
         prompt.get (['(y/n)'], function (err, results){
             var answer = (results['(y/n)'] === 'y');
             local = answer;
+            config.sudo = (local) ? "" : "sudo";
             done ();
         });
     },
@@ -67,6 +68,9 @@ async.waterfall ([
             prompt.get (['<enter>'], function(err, results) {
                 done ();
             });
+        }
+        else{
+            done ();
         }
     },
     function (done){
@@ -113,7 +117,7 @@ async.waterfall ([
                 var git_url = results['Git repository URL'];
                 if (git_url){
                     console.log ("  Cloning your repository...");
-                    var child = exec ('sudo git clone ' + git_url, function (err, std, ster){
+                    var child = exec ('cd ' + config.applicationDirectory + ' ; cd .. ; ' + config.sudo + ' git clone ' + git_url, function (err, std, ster){
                         if (err){
                             done (err);
                         }
@@ -139,10 +143,10 @@ async.waterfall ([
             console.log ("\t pullKey: <path to a ssh key file for the HTTPS Server>");
             console.log ("\t pullCert: <path to a ssh cert file for the HTTPS Server>");
             console.log ("\t pullCa: <array of paths to the certificate authority files> (optional)");
-            console.log ("\t pullPassphrase: <string - phrase that the certificate was generated with> (optional if certificate was not generated with a passphrase)");
+            console.log ("\t pullPassphrase: <string - phrase that the certificate was generated with> (optional)");
             console.log ("\t pullSecret: <secret phrase that this server uses to identify as a valid pull request> (optional))");
             console.log ("\t pullBranch: <the branch that this server should pull from on pull requests> (defaults to master))");
-            prompt.get (["pull_port", "pull_key", "pull_cert", "pull_ca", "pull_passphrase", "pull_secret", "pull_branch"], function (err, results){
+            prompt.get (["pullPort", "pullKey", "pullCert", "pullCa", "pullPassphrase", "pullSecret", "pullBranch"], function (err, results){
                 for (var k in results){
                     config[k] = results[k];
                 }
@@ -178,9 +182,12 @@ async.waterfall ([
         var data = JSON.stringify (config);
         fs.writeFileSync ("app-config.json", data);
         console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to app-config.json");
+        console.log ("To Launch the application type 'sudo start node-aws-deploy'");
+        process.exit (0);
     }
     else{
         console.log ("There were errors. Errors:" + err);
+        process.exit (1);
     }
 });
 
