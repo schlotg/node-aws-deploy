@@ -84,6 +84,7 @@ async.waterfall ([
                 if (!ssh_file){
                     console.log ("/tssh key not generated, generating a new one.");
                     var child = exec ('sudo ssh-keygen -t rsa -C "' + email + '"', function (err, std, ster){
+console.log ("debug here: err:%j, std:%j, ster:%j", err, std, ster);                        
                         if (err){done (err);}
                         else{
                             ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");
