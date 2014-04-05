@@ -176,8 +176,21 @@ async.waterfall ([
         var data = JSON.stringify (config);
         fs.writeFileSync ("app-config.json", data);
         console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to app-config.json");
-        console.log ("To Launch the application type 'sudo start node-aws-deploy'");
-        process.exit (0);
+        if (!local){
+            console.log ("To Launch the application type 'sudo start " + (config.applicationName || "node-aws-deploy") + "'");
+            // rename the upstart file to the applicaiton name
+            if (config.applicationName){
+                var child = exec ("sudo mv /etc/init/node-aws-deploy /etc/init/" + config.applicationName, function (err, std, ster){
+                    process.exit (0);
+                });
+            }
+            else{
+                process.exit (0);
+            }
+        }
+        else{
+            process.exit (0);
+        }
     }
     else{
         console.log ("There were errors. Errors:" + err);
