@@ -88,15 +88,15 @@ async.waterfall ([
     function (done){
         if (!local){
             // go get the ssh key or create one if it doesn't exist
-            try { ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");}
+            try { ssh_file = fs.readFileSync ("/home/ec2-user/.ssh/id_rsa.pub");}
             catch (err) {ssh_file = null; console.log (err);}
             if (!ssh_file){
                 console.log ("/tssh key not generated, generating a new one.");
-                var child = exec ('sudo ssh-keygen -t rsa -C "' + email + '"', function (err, std, ster){
+                var child = exec ('ssh-keygen -t rsa -C "' + email + '"', function (err, std, ster){
 console.log ("debug here: err:%j, std:%j, ster:%j", err, std, ster);
                     if (err){done (err);}
                     else{
-                        ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");
+                        ssh_file = fs.readFileSync ("/home/ec2-user/.ssh/id_rsa.pub");
                         done ();
                     }
                 });
