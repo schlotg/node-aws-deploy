@@ -36,7 +36,7 @@ echo "
 #!upstart
 description \"Node Deploy\"
 author \"none-aws-deploy\"
-env APP_PATH=\"/root/node-aws-deploy\"
+env APP_PATH=\"/home/ec2-user/node-aws-deploy\"
 env ENTRY=\"_start.js\"
 start on started mountall
 stop on shutdown
@@ -54,6 +54,6 @@ sudo mv node-aws-deploy.conf /etc/init/node-aws-deploy.conf
 echo "UpStart Entry Complete..."
 
 # launch the installer for configuring your app
-cd /root/node-aws-deploy
+cd /home/ec2-user/node-aws-deploy
 sudo npm install -d
 sudo node install.js
