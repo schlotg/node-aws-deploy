@@ -20,10 +20,10 @@ async.waterfall ([
     },
 
     function (done){
-        console.log (++i + ") Is this a 'local' install? (If this is on a remote server the answer is no)");
+        console.log (++i + ") Is this a 'remote' install? (If this is on a remote server the answer is y)");
         prompt.get (['(y/n)'], function (err, results){
             var answer = (results['(y/n)'] === 'y');
-            local = answer;
+            local = !answer;
             config.sudo = (local) ? "" : "sudo";
             done ();
         });
@@ -77,6 +77,7 @@ async.waterfall ([
             console.log (++i + ") Enter your email address to seed the ssh key");
             prompt.get (['email'], function(err, results) {
                 email = results['email'];
+                done ();
             });
         }
         else{
@@ -85,22 +86,27 @@ async.waterfall ([
     },
 
     function (done){
-        // go get the ssh key or create one if it doesn't exist
-        try { ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");}
-        catch (err) {ssh_file = null; console.log (err);}
-        if (!ssh_file){
-            console.log ("/tssh key not generated, generating a new one.");
-            var child = exec ('sudo ssh-keygen -t rsa -C "' + email + '"', function (err, std, ster){
+        if (!local){
+            // go get the ssh key or create one if it doesn't exist
+            try { ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");}
+            catch (err) {ssh_file = null; console.log (err);}
+            if (!ssh_file){
+                console.log ("/tssh key not generated, generating a new one.");
+                var child = exec ('sudo ssh-keygen -t rsa -C "' + email + '"', function (err, std, ster){
 console.log ("debug here: err:%j, std:%j, ster:%j", err, std, ster);
-                if (err){done (err);}
-                else{
-                    ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");
-                    done ();
-                }
-            });
+                    if (err){done (err);}
+                    else{
+                        ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");
+                        done ();
+                    }
+                });
+            }
+            else{
+                console.log ("/tssh key already generated!");
+                done ();
+            }
         }
         else{
-            console.log ("/tssh key already generated!");
             done ();
         }
     },
