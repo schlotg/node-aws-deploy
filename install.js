@@ -88,7 +88,7 @@ async.waterfall ([
     function (done){
         if (!local){
             // go get the ssh key or create one if it doesn't exist
-            try { ssh_file = fs.readFileSync ("/home/ec2-user/.ssh/id_rsa.pub");}
+            try { ssh_file = fs.readFileSync ("/root/.ssh/id_rsa.pub");}
             catch (err) {ssh_file = null; console.log (err);}
             if (!ssh_file){
                 console.log ("/tssh key not generated, generating a new one.");
