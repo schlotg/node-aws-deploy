@@ -18,7 +18,7 @@ async.waterfall ([
         prompt.start ();
         done ();
     },
-
+/*
     function (done){
         console.log (++i + ") Is this a 'remote' install? (If this is on a remote server the answer is y)");
         prompt.get (['(y/n)'], function (err, results){
@@ -41,14 +41,15 @@ async.waterfall ([
             done ();
         }
     },
-
+*/
     function (done){
         console.log (++i + ") Enter your application's name");
         prompt.get (['name'], function (err, results){
             config.applicationName = results['name'];
             done ();
         });
-    },
+    } /*,
+
     function (done){
         console.log (++i + ") Enter your application's entry point (defaults to 'start.js')");
         prompt.get (['entry point'], function(err, results) {
@@ -170,17 +171,17 @@ async.waterfall ([
             done ();
         }
     }
-
+*/
 ], function (err){
     if (!err){
         var data = JSON.stringify (config);
-        fs.writeFileSync ("app-config.json", data);
+        //fs.writeFileSync ("app-config.json", data);
         console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to app-config.json");
         if (!local){
             console.log ("To Launch the application type 'sudo start " + (config.applicationName || "node-aws-deploy") + "'");
             // rename the upstart file to the applicaiton name
             if (config.applicationName){
-                var child = exec ("sudo mv /etc/init/node-aws-deploy /etc/init/" + config.applicationName, function (err, std, ster){
+                var child = exec ("sudo mv /etc/init/node-aws-deploy.conf /etc/init/" + config.applicationName + ".conf", function (err, std, ster){
                     process.exit (0);
                 });
             }
