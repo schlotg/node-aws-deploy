@@ -256,6 +256,10 @@
     }
     // start the application
     function startApp (){
+        var workingDirectory = config.applicationDirectory || process.cwd();
+        console.log ("\nWorking Directory is:" + process.cwd());
+        process.chdir (workingDirectory);
+        console.log ("\nSetting Working Directory to:" + process.cwd());
         var appEntry = config.appEntry || "start.js";
         console.log ("\nSTARTING APPLICATION CALLING: " + appEntry);
         require ('./' + appEntry);
