@@ -294,12 +294,12 @@
             updating_on = true;
         }
 
-        /*
+        
         // change directory to the app working directory. Default to the current directory
         var workingDirectory = config.applicationDirectory || process.cwd();
         process.chdir (workingDirectory);
         console.log ("\nSetting Working Directory to:" + process.cwd());
-        */
+
         // determine if we are in the could or not and set an environment variable
         // in case other code needs to know this
         console.log ("\nServer in cloud: " + cloud.isCloud ());
