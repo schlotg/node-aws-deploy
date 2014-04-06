@@ -34,24 +34,37 @@ From the ssh terminal:
         Defaults	requiretty
 
     press <i> and insert a ‘#’ before the Defaults:
-        use the down keyboard arrow to find this line:
-            Defaults	secure_path = /sbin:/bin:/usr/sbin:/usr/bin
-        press and insert the following at the end of this line:
-        	:/usr/local/bin
-        press <esc> and then type :wq!
-        type exit and press enter
+
+    use the down keyboard arrow to find this line:
+
+        Defaults	secure_path = /sbin:/bin:/usr/sbin:/usr/bin
+
+    press and insert the following at the end of this line:
+
+        :/usr/local/bin
+
+    press <esc> and then type :wq!
+
+    type exit and press enter
+
 Generate a ssh key (use your email address):
+
     type ssh-keygen -t rsa -C "your_email@mail.com"
     press <enter> for the rest of the questions
+
 In order for this to work correctly you need to have a valid package.json for your application and include the the following line in your list of dependencies:
-    	"node-aws-deploy":"git://github.com/schlotg/node-aws-deploy.git"
+
+    "node-aws-deploy":"git://github.com/schlotg/node-aws-deploy.git"
+
 Install Git and clone the install script:
-    type:
+
         sudo yum install git
         sudo git clone https://github.com/schlotg/node-aws-deploy.git
         sudo chmod 777 node-aws-deploy/install_aws
         sudo node-aws-deploy/install_aws
+
 To launch type
+
     sudo start <your application name>
 
 Your application will now run everytime the server is started.
