@@ -291,7 +291,7 @@
     // if nor configured this does nothing
     sudo = (config.sudo) ? "sudo " : "";
 
-    if (cluster.isMaster ()){
+    if (cluster.isMaster){
         // init the cloud code
         cloud.init (config, function (){
             instance_data = cloud.getInstanceData ();
