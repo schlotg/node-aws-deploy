@@ -30,7 +30,7 @@
  // pulls. If no pull secret is configure then all pull request are valid
  "pullSecret": <secret phrase>
 
- "branch": <git branch to use for the pull>
+ "pullBranch": <git branch to use for the pull>
 
  // In theory you can put an cloud vendor specific params in here. You just have to have support in cloud.js for them.
  // Curently AWS is the only cloud platform supported

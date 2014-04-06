@@ -100,38 +100,6 @@ async.waterfall ([
             done ();
         }
     },
-    function (done){
-        if (!local){
-            console.log (++i + ") Now that your Git repository has been configured, enter the ssh url for remote access so this server can clone it:");
-            prompt.get (['Git repository URL'], function (err, results){
-                var git_url = results['Git repository URL'];
-                if (git_url){
-                    console.log ("  Cloning your repository...");
-                    var child = exec ('cd ' + config.applicationDirectory + ' ; cd .. ; ' + config.sudo + ' git clone ' + git_url, function (err, std, ster){
-                        if (err){
-                            done (err);
-                        }
-                        else{
-                            console.log (std);
-                            var dir = std.split ("Cloning into ");
-                            // extract the directory from the git clone string
-                            dir = dir && dir[1] && dir[1].split ("'")[1].replace ("...", "");
-                            if (dir){
-                                config.applicationDirectory = '/home/ec2-user/' + dir;
-                            }
-                            done ();
-                        }
-                    });
-                }
-                else{
-                    done ();
-                }
-            });
-        }
-        else{
-            done ();
-        }
-    },
 
     function (done){
         if (!local){
@@ -168,6 +136,44 @@ async.waterfall ([
                 done ();
             });
 
+        }
+        else{
+            done ();
+        }
+    },
+
+    function (done){
+        if (!local){
+            console.log (++i + ") Now that your Git repository has been configured, enter the ssh url for remote access so this server can clone it:");
+            prompt.get (['Git repository URL'], function (err, results){
+                var git_url = results['Git repository URL'];
+                if (git_url){
+                    console.log ("  Cloning your repository...");
+                    var child = exec ('cd ' + config.applicationDirectory + ' ; cd .. ; ' + config.sudo + ' git clone ' + git_url, function (err, std, ster){
+                        if (err){
+                            done (err);
+                        }
+                        else{
+                            console.log (std);
+                            var dir = std.split ("Cloning into ");
+                            // extract the directory from the git clone string
+                            dir = dir && dir[1] && dir[1].split ("'")[1].replace ("...", "");
+                            if (dir){
+                                config.applicationDirectory = '/home/ec2-user/' + dir;
+                            }
+                            console.log ("Configuring the branch and pulling all dependencies....");
+                            child = exec ('cd ' + config.applicationDirectory + ' ; ' + config.sudo + ' git checkout ' + config.pullBranch +
+                                ' ; ' + config.sudo + ' npm install -d', function (err, std, ster){
+                                console.log (std);
+                                done ();
+                            });
+                        }
+                    });
+                }
+                else{
+                    done ();
+                }
+            });
         }
         else{
             done ();
