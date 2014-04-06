@@ -109,8 +109,7 @@
         function _pull (cb){
             console.log ("\nPulling the latest code from remote repository");
             // get the latest code
-            var branch = config.branch || "master"; // defaults to master
-            var child = exec (sudo + "git pull origin " + branch, function (err, std, ster){
+            var child = exec (sudo + "git pull", function (err, std, ster){
                 if (err){
                     console.log ("	Error pulling reposititory. Error" + ster);
                     pull_error += "\nError pulling reposititory. Error" + ster;
