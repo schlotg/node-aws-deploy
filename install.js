@@ -176,8 +176,6 @@ async.waterfall ([
 
 ], function (err){
     if (!err){
-config.applicationDirectory = "/home/ec2-user/ABoxAbove";
-config.applicationName = "aba";
         var data = JSON.stringify (config);
         fs.writeFileSync (config.applicationDirectory + "/.app-config.json", data);
         console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to app-config.json");
@@ -186,15 +184,11 @@ config.applicationName = "aba";
             // rename the upstart file to the applicaiton name
             if (config.applicationName){
                 var name = config.applicationName + ".conf";
-console.log (name);
                 var child = exec ("sudo mv /etc/init/node-aws-deploy.conf /etc/init/" + name, function (err, std, ster){
                     var data = fs.readFileSync ('/etc/init/' + name);
-console.log (data);
-
                     var data_str = data && data.toString ();
                     if (data_str && data_str.replace){
                         data_str = data_str && data_str.replace ('PLACE_HOLDER', config.applicationDirectory);
-console.log (data_str);
                         fs.writeFileSync ('/etc/init/' + name, data_str);
                     }
                     process.exit (0);
