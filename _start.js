@@ -294,9 +294,10 @@
             updating_on = true;
         }
 
-        
+
         // change directory to the app working directory. Default to the current directory
         var workingDirectory = config.applicationDirectory || process.cwd();
+        console.log ("\nWorking Directory is:" + process.cwd());
         process.chdir (workingDirectory);
         console.log ("\nSetting Working Directory to:" + process.cwd());
 
