@@ -67,8 +67,8 @@ To launch type
 
     sudo start <your application name>
 
-Your application will now run every time the server is started. On start, restart, and on a webhook post, your application will: grab the latest code from your git repository branch, look for NPM dependency changes, and restart the application and all other servers of this same type running under your AWS credentials.
-
+Your application will now run every time the server is started. On start and restart node-aws-deploy will: grab the latest code from your git repository branch and look for NPM dependency changes.
+On a web hook post node-aws-deploy will find all the running AWS instances of this same type and restart them so updates are propagated across the entire scale group.
 
 
 
