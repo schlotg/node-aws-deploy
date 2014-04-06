@@ -44,8 +44,7 @@ respawn
 respawn limit 99 5
 script
         cd \$APP_PATH
-        sudo mkdir \$APP_PATH/logs/
-        exec sudo nodemon \$APP_PATH/\$ENTRY >> /\$APP_PATH/logs/log 2>&1
+        exec sudo nodemon \$APP_PATH/\$ENTRY >> \$APP_PATH/logs/log 2>&1
 end script
 
 " >> node-aws-deploy.conf
@@ -55,5 +54,7 @@ echo "UpStart Entry Complete..."
 
 # launch the installer for configuring your app
 cd /home/ec2-user/node-aws-deploy
+sudo mkdir logs
+sudo chmod 777 logs
 sudo npm install -d
 sudo node install.js

@@ -114,7 +114,8 @@ async.waterfall ([
                         else{
                             console.log (std);
                             var dir = std.split ("Cloning into ");
-                            dir = dir && dir[1] && dir[1].replace ("'", "").replace ("...", "");
+                            // extract the directory from the git clone string
+                            dir = dir && dir[1] && dir[1].split ("'")[1].replace ("...", "");
                             if (dir){
                                 config.applicationDirectory = '/home/ec2-user/' + dir;
                             }
@@ -131,6 +132,7 @@ async.waterfall ([
             done ();
         }
     },
+
     function (done){
         if (!local){
             console.log (++i + ") Enter the pull information, what triggers it how its configured, etc...");
