@@ -177,13 +177,20 @@ async.waterfall ([
 ], function (err){
     if (!err){
         var data = JSON.stringify (config);
-        //fs.writeFileSync ("app-config.json", data);
+        fs.writeFileSync (config.applicationDirectory + "/.app-config.json", data);
         console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to app-config.json");
         if (!local){
             console.log ("To Launch the application type 'sudo start " + (config.applicationName || "node-aws-deploy") + "'");
             // rename the upstart file to the applicaiton name
             if (config.applicationName){
-                var child = exec ("sudo mv /etc/init/node-aws-deploy.conf /etc/init/" + config.applicationName + ".conf", function (err, std, ster){
+                var name = config.applicationName + ".conf";
+                var child = exec ("sudo mv /etc/init/node-aws-deploy.conf /etc/init/" + name, function (err, std, ster){
+                    var data = fs.readFileSync ('/etc/init/' + name);
+                    var data_str = data && data.toString ();
+                    if (data_str && data_str.replace){
+                        data_str && data_str.replace ('PLACE_HOLDER', config.applicationDirectory);
+                        fs.writeFileSync ('/etc/init/' + name, data_str);
+                    }
                     process.exit (0);
                 });
             }

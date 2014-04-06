@@ -36,15 +36,15 @@ echo "
 #!upstart
 description \"Node Deploy\"
 author \"none-aws-deploy\"
-env APP_PATH=\"/home/ec2-user/node-aws-deploy\"
-env ENTRY=\"_start.js\"
+env APP_PATH="PLACE_HOLDER"
+env ENTRY=\"node_modules/node-aws-deploy/_start.js\"
 start on started mountall
 stop on shutdown
 respawn
 respawn limit 99 5
 script
         cd \$APP_PATH
-        exec sudo nodemon \$APP_PATH/\$ENTRY >> \$APP_PATH/logs/log 2>&1
+        exec sudo \$APP_PATH/\$ENTRY >> \$APP_PATH/logs/log 2>&1
 end script
 
 " >> node-aws-deploy.conf
