@@ -17,7 +17,7 @@ async.waterfall ([
             " Just answer a few questions and everything will be setup");
         prompt.start ();
         done ();
-    },
+    }/*,
 
     function (done){
         console.log (++i + ") Is this a 'remote' install? (If this is on a remote server the answer is y)");
@@ -172,7 +172,7 @@ async.waterfall ([
         else{
             done ();
         }
-    }
+    }*/
 
 ], function (err){
     if (!err){
