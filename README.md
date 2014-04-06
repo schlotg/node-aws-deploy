@@ -6,7 +6,7 @@ Setting up the AWS Node Server
 ===
 These instructions are specific to setting up a node.js server on a AWS Amazon Linux Instance. They can be easily adapted to other Linux instances on other cloud platforms. The instructions below also are written for a MAC interfacing with the AWS EC2 instances. It should work as is on Linux, but some sort of Secure Shell program will be needed on a Windows machine.
 
-# Create an AWS account http://aws.amazon.com/
+*Create an AWS account http://aws.amazon.com/
 #Launch an EC2 instance (Make sure you have downloaded the ssh key/pair so you can connect to your instance). Make sure it is an Amazon Linux 64 bit AMI. Set the user data to:
 
     {"type":"development", "listensTo": "develop", "deploy":true}
