@@ -51,6 +51,14 @@ async.waterfall ([
     },
 
     function (done){
+        console.log (++i + ") Enter any command line arguments you would like passed in (Entered as you would on the command line)");
+        prompt.get (['commandArguments'], function (err, results){
+            config.commandArguments = results['commandArguments'];
+            done ();
+        });
+    },
+
+    function (done){
         console.log (++i + ") Enter your application's entry point (defaults to 'start.js')");
         prompt.get (['entry point'], function(err, results) {
             config.appEntry = results['entry point'];
