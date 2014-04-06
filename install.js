@@ -193,7 +193,7 @@ console.log (data);
 
                     var data_str = data && data.toString ();
                     if (data_str && data_str.replace){
-                        data_str && data_str.replace ('PLACE_HOLDER', config.applicationDirectory);
+                        data_str = data_str && data_str.replace ('PLACE_HOLDER', config.applicationDirectory);
 console.log (data_str);
                         fs.writeFileSync ('/etc/init/' + name, data_str);
                     }
