@@ -67,7 +67,7 @@ To launch type
 
     sudo start <your application name>
 
-Your application will now run everytime the server is started.
+Your application will now run every time the server is started. On start, restart, and on a webhook post, your application will: grab the latest code from your git repository branch, look for NPM dependency changes, and restart the application and all other servers of this same type running under your AWS credentials.
 
 
 
