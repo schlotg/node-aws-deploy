@@ -44,7 +44,7 @@ respawn
 respawn limit 99 5
 script
         cd \$APP_PATH
-        exec sudo \$APP_PATH/\$ENTRY >> \$APP_PATH/logs/log 2>&1
+        exec sudo node \$APP_PATH/\$ENTRY >> \$APP_PATH/logs/log 2>&1
 end script
 
 " >> node-aws-deploy.conf
