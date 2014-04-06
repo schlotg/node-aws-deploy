@@ -53,6 +53,7 @@
     var path = require('path');
     var url = require('url');
     var qs = require ('querystring');
+    var cluster = require ('cluster');
     var config_file, config, error, pull_error = "";
     var package_json, package_copy, parsed_package, parsed_copy;
     var restart = true;
@@ -290,149 +291,154 @@
     // if nor configured this does nothing
     sudo = (config.sudo) ? "sudo " : "";
 
-    // init the cloud code
-    cloud.init (config, function (){
-        instance_data = cloud.getInstanceData ();
-        console.log ("\nGetting Cloud Data")
-        console.log ("  Instance ID:" + cloud.getInstanceId ());
-        console.log ("  Instance Data:%j", instance_data);
+    if (cluster.isMaster (){
+        // init the cloud code
+        cloud.init (config, function (){
+            instance_data = cloud.getInstanceData ();
+            console.log ("\nGetting Cloud Data")
+            console.log ("  Instance ID:" + cloud.getInstanceId ());
+            console.log ("  Instance Data:%j", instance_data);
 
-        // see if updating should be on or off
-        if (instance_data && instance_data.deploy === true){
-            updating_on = true;
-        }
-
-
-        // change directory to the app working directory. Default to the current directory
-        var workingDirectory = config.applicationDirectory || process.cwd();
-        console.log ("\nWorking Directory is:" + process.cwd());
-        process.chdir (workingDirectory);
-        console.log ("\nSetting Working Directory to:" + process.cwd());
-
-        // determine if we are in the could or not and set an environment variable
-        // in case other code needs to know this
-        console.log ("\nServer in cloud: " + cloud.isCloud ());
-        process.env['CLOUD'] = cloud.isCloud ();
-        process.env['INSTANCE_ID'] = cloud.getInstanceId ();
-        process.env['INSTANCE_DATA'] = cloud.getInstanceData ();
+            // see if updating should be on or off
+            if (instance_data && instance_data.deploy === true){
+                updating_on = true;
+            }
 
 
-        function checkAndUpdateEnvironment (master){
-            if (updating_on){
-                // get the latest code
-                pull (function (){
-                    // check for dependency changes
-                    checkNodeDependencies (function (){
-                        checkNPMDependencies (function (){
-                            startApp ();
+            // change directory to the app working directory. Default to the current directory
+            var workingDirectory = config.applicationDirectory || process.cwd();
+            console.log ("\nWorking Directory is:" + process.cwd());
+            process.chdir (workingDirectory);
+            console.log ("\nSetting Working Directory to:" + process.cwd());
+
+            // determine if we are in the could or not and set an environment variable
+            // in case other code needs to know this
+            console.log ("\nServer in cloud: " + cloud.isCloud ());
+            process.env['CLOUD'] = cloud.isCloud ();
+            process.env['INSTANCE_ID'] = cloud.getInstanceId ();
+            process.env['INSTANCE_DATA'] = cloud.getInstanceData ();
+
+
+            function checkAndUpdateEnvironment (master){
+                if (updating_on){
+                    // get the latest code
+                    pull (function (){
+                        // check for dependency changes
+                        checkNodeDependencies (function (){
+                            checkNPMDependencies (function (){
+                                startApp ();
+                            });
                         });
-                    });
-                }, master);
+                    }, master);
+                }
             }
-        }
-        checkAndUpdateEnvironment (false);
+            checkAndUpdateEnvironment (false);
 
-        // create a server to listen for pull requests
-        function handleRequests (req, res){
-            function parseURL (req){
-                var url_in = url.parse(req.url,true);
-                req.query = url_in.query;
-                req.href = url_in.href;
-            }
-            function bodyParser (req, res, func){
-                if (req.method == 'POST') {
-                    var body = '';
-                    req.on('data', function (data) {
-                        body += data;
-                        if (body.length > 524488) { // limit the most data someone can send to 1/2 a meg
-                            request.connection.destroy();
-                        }
-                    });
-                    req.on('end', function () {
-                        req.body = qs.parse(body);
-                        if (func){func (req, res);}
-                    });
+            // create a server to listen for pull requests
+            function handleRequests (req, res){
+                function parseURL (req){
+                    var url_in = url.parse(req.url,true);
+                    req.query = url_in.query;
+                    req.href = url_in.href;
                 }
-            }
-            if (req.url.search ("/pull") !== -1){ // handle a command to pull
-                var valid_request = true;
-                parseURL (req);
-                if (config.pullSecret){
-                    valid_request = (req.query.secret == config.pullSecret) ? true : false;
-                }
-                if (valid_request){
-                    bodyParser (req, res, function (){
-                        var listensTo = (instance_data && instance_data.listensTo) ? instance_data.listensTo : "";
-                        if (req.body.ref.search (listensTo) !== -1){
-                            pull (function (){
-                                res.writeHead(200, {'Content-Type': 'text/plain'});
-                                if (pull_error){ res.end("Pull Accepted. There were Errors:" + pull_error); }
-                                else {res.end("Pull Accepted"); }
-                                var date = new Date ();
-                                console.log ("\nPull Command, master:" + req.query.master + " @" + date.toString ());
-                                console.log ("	body:%j", req.body);
-                                if (pull_error){
-                                    console.log ("	There were Errors:%j", pull_error);
-                                }
-                            }, req.query.master, req);
-                        }
-                        else{
-                            console.log ("\nIgnoring Pull Request, wrong branch. \n\tListening for: " + config.branch +
-                                "\n\t Recieved:" + body.ref);
-                        }
-                    });
-                }
-                else{
-                    res.res.writeHead(200, {'Content-Type': 'text/plain'});
-                    res.end("Pull Not Authorized");
-                    console.log ("\nPull Not Authorized @" + date.toString ());
-                    console.log ("	Secret passed in:" + !!params.secret);
-                    console.log ("	Secret required:" + !!config.pullSecret);
-                    console.log ("	Secrets Match:" + (config.pullSecret === params.secret));
-                }
-            }
-            else{
-                res.res.writeHead(404, {'Content-Type': 'text/plain'});
-                res.end("Not Found");
-            }
-        }
-        if (updating_on){
-            var http_port = (config.pullPort || 8000), key, cert, options;
-            if (config.pullKey && config.pullCert){
-                try {key = fs.readFileSync (config.pullKey);}
-                catch (err) {key = null;}
-                try {cert = fs.readFileSync (config.pullCert);}
-                catch (err) {cert = null;}
-                if (key && cert) {
-                    options = {key:key, cert:cert,
-                    ciphers: 'ECDHE-RSA-AES128-SHA256:AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH',
-                    honorCipherOrder: true
-                    };
-                }
-                if (options && config.pullPassphrase){
-                    options.passphrase = config.pullPassphrase;
-                }
-                if (options && config.pullCa && config.pullCa.length){
-                    var ca = [];
-                    config.pullCa.forEach (function (_ca){
-                        try {__ca = fs.readFileSync (_ca, {encoding: "aascii"});}
-                        catch (err) {__ca = null;}
-                        if (__ca){ ca.push (__ca);}
-                    });
-                    if (ca.length){
-                        options.ca = ca;
+                function bodyParser (req, res, func){
+                    if (req.method == 'POST') {
+                        var body = '';
+                        req.on('data', function (data) {
+                            body += data;
+                            if (body.length > 524488) { // limit the most data someone can send to 1/2 a meg
+                                request.connection.destroy();
+                            }
+                        });
+                        req.on('end', function () {
+                            req.body = qs.parse(body);
+                            if (func){func (req, res);}
+                        });
                     }
                 }
+                if (req.url.search ("/pull") !== -1){ // handle a command to pull
+                    var valid_request = true;
+                    parseURL (req);
+                    if (config.pullSecret){
+                        valid_request = (req.query.secret == config.pullSecret) ? true : false;
+                    }
+                    if (valid_request){
+                        bodyParser (req, res, function (){
+                            var listensTo = (instance_data && instance_data.listensTo) ? instance_data.listensTo : "";
+                            if (req.body.ref.search (listensTo) !== -1){
+                                pull (function (){
+                                    res.writeHead(200, {'Content-Type': 'text/plain'});
+                                    if (pull_error){ res.end("Pull Accepted. There were Errors:" + pull_error); }
+                                    else {res.end("Pull Accepted"); }
+                                    var date = new Date ();
+                                    console.log ("\nPull Command, master:" + req.query.master + " @" + date.toString ());
+                                    console.log ("	body:%j", req.body);
+                                    if (pull_error){
+                                        console.log ("	There were Errors:%j", pull_error);
+                                    }
+                                }, req.query.master, req);
+                            }
+                            else{
+                                console.log ("\nIgnoring Pull Request, wrong branch. \n\tListening for: " + config.branch +
+                                    "\n\t Recieved:" + body.ref);
+                            }
+                        });
+                    }
+                    else{
+                        res.res.writeHead(200, {'Content-Type': 'text/plain'});
+                        res.end("Pull Not Authorized");
+                        console.log ("\nPull Not Authorized @" + date.toString ());
+                        console.log ("	Secret passed in:" + !!params.secret);
+                        console.log ("	Secret required:" + !!config.pullSecret);
+                        console.log ("	Secrets Match:" + (config.pullSecret === params.secret));
+                    }
+                }
+                else{
+                    res.res.writeHead(404, {'Content-Type': 'text/plain'});
+                    res.end("Not Found");
+                }
             }
-            if (key && cert){
-                console.log ("\nHTTPS Pull Server Started. Listening on Port:" + http_port);
-                https.createServer (options, handleRequests).listen (http_port);
+            if (updating_on){
+                var http_port = (config.pullPort || 8000), key, cert, options;
+                if (config.pullKey && config.pullCert){
+                    try {key = fs.readFileSync (config.pullKey);}
+                    catch (err) {key = null;}
+                    try {cert = fs.readFileSync (config.pullCert);}
+                    catch (err) {cert = null;}
+                    if (key && cert) {
+                        options = {key:key, cert:cert,
+                        ciphers: 'ECDHE-RSA-AES128-SHA256:AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH',
+                        honorCipherOrder: true
+                        };
+                    }
+                    if (options && config.pullPassphrase){
+                        options.passphrase = config.pullPassphrase;
+                    }
+                    if (options && config.pullCa && config.pullCa.length){
+                        var ca = [];
+                        config.pullCa.forEach (function (_ca){
+                            try {__ca = fs.readFileSync (_ca, {encoding: "aascii"});}
+                            catch (err) {__ca = null;}
+                            if (__ca){ ca.push (__ca);}
+                        });
+                        if (ca.length){
+                            options.ca = ca;
+                        }
+                    }
+                }
+                if (key && cert){
+                    console.log ("\nHTTPS Pull Server Started. Listening on Port:" + http_port);
+                    https.createServer (options, handleRequests).listen (http_port);
+                }
+                else{
+                    console.log ("\nWARNING cert and key not specified or invalid. Falling back to HTTP");
+                    console.log ("HTTP Pull Server Started. Listening on Port:" + http_port);
+                    http.createServer (handleRequests).listen (http_port);
+                }
             }
-            else{
-                console.log ("\nWARNING cert and key not specified or invalid. Falling back to HTTP");
-                console.log ("HTTP Pull Server Started. Listening on Port:" + http_port);
-                http.createServer (handleRequests).listen (http_port);
-            }
-        }
-    });
+        });
+    }
+    else{
+        startApp ();
+    }
  })();
