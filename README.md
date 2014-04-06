@@ -2,8 +2,8 @@ Node AWS Deploy
 =====
 This is my attempt at an easy to use and robust deployment and install system to get your Node app up and running, quickly and easily on AWS. node-aws-deploy is designed to take a web hook HTTP post from a Git repository service and than automatically trigger a deployment across multiple servers. New servers that are started up will automatically grab the latest changes.
 
-Setting up the AWS Node Server
-=
+###Setting up the AWS Node Server
+====
 These instructions are specific to setting up a node.js server on a AWS Amazon Linux Instance. They can be easily adapted to other Linux instances on other cloud platforms. The instructions below also are written for a MAC interfacing with the AWS EC2 instances. It should work as is on Linux, but some sort of Secure Shell program will be needed on a Windows machine.
 
 Create an AWS account http://aws.amazon.com/
@@ -12,7 +12,7 @@ Launch an EC2 instance (Make sure you have downloaded the ssh key/pair so you ca
     {"type":"development", "listensTo": "develop", "deploy":true}
 
 Where type, is the instance type. The name only matters in that it should make sense to you and this instance will communicate with others of the same type. The ListensTo field specifies which branch of your repository it should listen to and automatically pull from when it sees changes and deploy turns this system on and off. You might want if off in your production deploy but have it auto deploy for develop and testing builds.
-#On Mac, open a terminal and change directory to the folder containing your key pair your are using with the instance launched in step 2
+On Mac, open a terminal and change directory to the folder containing your key pair your are using with the instance launched in step 2
     Ensure the key has the right permissions (Substitute key_pair_name with the actual name of your file):
         sudo chmod 400 key_pair_name.pem
     Launch a secure shell into the ec2 instance (substitute dns_addr with the dns address of the running ec2 instance you just launched)
