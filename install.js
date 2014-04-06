@@ -163,7 +163,7 @@ async.waterfall ([
                             }
                             console.log ("Configuring the branch and pulling all dependencies....");
                             child = exec ('cd ' + config.applicationDirectory + ' ; ' + config.sudo + ' git checkout ' + config.pullBranch +
-                                ' ; ' + config.sudo + ' npm install -d', function (err, std, ster){
+                                ' ; ' + config.sudo + ' npm install -d ; sudo mkdir logs ; sudo chmod 777 logs', function (err, std, ster){
                                 console.log (std);
                                 done ();
                             });

@@ -54,7 +54,5 @@ echo "UpStart Entry Complete..."
 
 # launch the installer for configuring your app
 cd /home/ec2-user/node-aws-deploy
-sudo mkdir logs
-sudo chmod 777 logs
 sudo npm install -d
 sudo node install.js
