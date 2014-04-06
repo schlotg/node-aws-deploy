@@ -12,18 +12,28 @@ Launch an EC2 instance (Make sure you have downloaded the ssh key/pair so you ca
     {"type":"development", "listensTo": "develop", "deploy":true}
 
 Where type, is the instance type. The name only matters in that it should make sense to you and this instance will communicate with others of the same type. The ListensTo field specifies which branch of your repository it should listen to and automatically pull from when it sees changes and deploy turns this system on and off. You might want if off in your production deploy but have it auto deploy for develop and testing builds.
-On Mac, open a terminal and change directory to the folder containing your key pair your are using with the instance launched in step 2
-    Ensure the key has the right permissions (Substitute key_pair_name with the actual name of your file):
-        sudo chmod 400 key_pair_name.pem
-    Launch a secure shell into the ec2 instance (substitute dns_addr with the dns address of the running ec2 instance you just launched)
+On Mac, open a terminal and change directory to the folder containing your key pair your are using with the instance
+
+Ensure the key has the right permissions (Substitute key_pair_name with the actual name of your file):
+
+    sudo chmod 400 key_pair_name.pem
+
+Launch a secure shell into the ec2 instance (substitute dns_addr with the dns address of the running ec2 instance you just launched)
+
         ssh -i key_pair_name.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ec2-user@dns_addr
-    From the ssh terminal:
-        Allow node to execute as a super user by modifying the /etc/sudoers file. Type the following:
-            sudo su
-            vi /etc/sudoers
-        Use the down keyboard arrow to find this line:
-            	Defaults	requiretty
-        press <i> and insert a ‘#’ before the Defaults:
+
+From the ssh terminal:
+
+    Allow node to execute as a super user by modifying the /etc/sudoers file. Type the following:
+
+        sudo su
+        vi /etc/sudoers
+
+    Use the down keyboard arrow to find this line:
+
+        Defaults	requiretty
+
+    press <i> and insert a ‘#’ before the Defaults:
         use the down keyboard arrow to find this line:
             Defaults	secure_path = /sbin:/bin:/usr/sbin:/usr/bin
         press and insert the following at the end of this line:
