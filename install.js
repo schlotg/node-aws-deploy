@@ -176,6 +176,8 @@ async.waterfall ([
 
 ], function (err){
     if (!err){
+config.applicationDirectory = "/home/ec2-user/ABoxAbove";
+config.applicationName = "aba";
         var data = JSON.stringify (config);
         fs.writeFileSync (config.applicationDirectory + "/.app-config.json", data);
         console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to app-config.json");
