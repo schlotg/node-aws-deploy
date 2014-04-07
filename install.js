@@ -59,6 +59,14 @@ async.waterfall ([
     },
 
     function (done){
+        console.log (++i + ') Enter any environment variables you would like set when your application is run (Entered as a JSON. Example: {"APP_ENV":"production"}');
+        prompt.get (['appEnvironmentVariables'], function (err, results){
+            config.appEnvironmentVariables = results['appEnvironmentVariables'];
+            done ();
+        });
+    },
+
+    function (done){
         console.log (++i + ") Enter your application's entry point (defaults to 'start.js')");
         prompt.get (['entry point'], function(err, results) {
             config.appEntry = results['entry point'];
@@ -192,7 +200,7 @@ async.waterfall ([
     if (!err){
         var data = JSON.stringify (config);
         fs.writeFileSync (config.applicationDirectory + "/.app-config.json", data);
-        console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to app-config.json");
+        console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to .app-config.json in your app's home directory");
         if (!local){
             console.log ("To Launch the application type 'sudo start " + (config.applicationName || "node-aws-deploy") + "'");
             // rename the upstart file to the applicaiton name
