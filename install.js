@@ -200,7 +200,8 @@ async.waterfall ([
     if (!err){
         var data = JSON.stringify (config);
         fs.writeFileSync (config.applicationDirectory + "/.app-config.json", data);
-        console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to .app-config.json in your app's home directory");
+        console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to '.app-config.json' in your app's home directory, " +
+            "The settings can always be changed by manually editing the '.app-config.json' file.");
         if (!local){
             console.log ("To Launch the application type 'sudo start " + (config.applicationName || "node-aws-deploy") + "'");
             // rename the upstart file to the applicaiton name
