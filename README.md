@@ -49,7 +49,7 @@ From the ssh terminal:
 
 Generate a ssh key (use your email address):
 
-    ssh-keygen -t rsa -C "your_email@mail.com"
+    sudo ssh-keygen -t rsa -C "your_email@mail.com"
     press <enter> for the rest of the questions
 
 In order for this to work correctly you need to have a valid package.json for your application and include the the following line in your list of dependencies:
