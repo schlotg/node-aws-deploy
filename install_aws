@@ -27,7 +27,7 @@ cd /root/
 # Install the latest stable node version using n (npm now comes with node)
 # 	To change versions to a specify one type sudo n x.xx.xx
 sudo n stable
-sudo npm install -g nodemon
+#sudo npm install -g nodemon
 
 #setup an upstart script to launch node-aws-deploy
 echo "Creating UpStart Entry"

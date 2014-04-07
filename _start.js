@@ -15,6 +15,7 @@
  "applicationDirectory": <set this to the directory you application lives in>
  "appEntry": <set this to the name of the 'js' file that is your entry point>
  "commandArguments": <command line arguments you would like pass to the application>
+ "appEnvironmentVariables": <{<key>:<pair>}, key pair environment variables that need to be se for the application >
 
  "pullPort": <set this to the port for a pull requests> - defaults to 8000
 
@@ -258,12 +259,20 @@
     }
     // start the application
     function startApp (){
+        // set command line args
         if (config.commandArguments){
             var args = config.commandArguments.split (" ");
             args && args.forEach (function (arg){
                 process.argv.push (arg);
             });
         }
+        // set environment variables
+        if (config.appEnvironmentVariables){
+            for (var k in config.appEnvironmentVariables){
+                process.env[k] = config.appEnvironmentVariables[k];
+            }
+        }
+        // enter the application
         var workingDirectory = config.applicationDirectory || process.cwd();
         var appEntry = config.appEntry || "start.js";
         console.log ("\nSTARTING APPLICATION CALLING: " + appEntry);
