@@ -293,7 +293,7 @@
     }
 
     if (!config) {
-        console.log ("	'app-config.json' is missing or invalid: Error:" + error);
+        console.log ("	'.app-config.json' is missing or invalid: Error:" + error);
         console.log ("	Continuing on with defaults");
         config = {};
     }
