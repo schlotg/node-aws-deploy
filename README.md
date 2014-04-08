@@ -93,7 +93,7 @@ Ensure you have the latest node-aws-deploy:
         sudo git pull
         sudo node install.js
 
-###Using the  AWS Node Server
+###Using the aws-node-server
 ====
 
 To launch type:
