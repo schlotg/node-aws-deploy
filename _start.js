@@ -212,7 +212,7 @@
             if (fs.existsSync(itemPath)){
                 if (fs.existsSync(itemPath) && fs.statSync(itemPath).isDirectory()) {
                     fs.readdirSync(itemPath).forEach(function(childItemName) {
-                        deleteRecursiveSync(path.join(itemPath, childItemName));
+                        deleteRecursiveSync (path.join (itemPath, childItemName));
                     });
                     fs.rmdirSync(itemPath);
                 } else {
@@ -317,8 +317,8 @@
         console.log ("working directory:" + process.cwd ());
         process.env["WORKING_DIR"] = process.cwd ();
     }
-    var path = process.env["WORKING_DIR"];
-    try {config_file = fs.readFileSync (path + "/.app-config.json");}
+    var _path = process.env["WORKING_DIR"];
+    try {config_file = fs.readFileSync (_path + "/.app-config.json");}
     catch (err){ error = err;}
 
     if (config_file){
