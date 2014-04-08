@@ -24,6 +24,7 @@ async.waterfall ([
             try {config = JSON.parse (config_file);}
             catch (err){ error = err;}
         }
+        done ();
     },
 
     function (done){
