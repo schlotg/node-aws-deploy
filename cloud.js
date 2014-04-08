@@ -57,6 +57,7 @@ function createCloudInterface() {
             var instances = [];
             if (EC2){
                 EC2.describeInstances(function(error, data) {
+console.log ("EC2.describeInstances- Error:%s Data:%j", error, data);
                     if (error) { cb && cb (error);}
                     else {
                         if (data.Reservations.length){
@@ -66,9 +67,12 @@ function createCloudInterface() {
                                 --count;
                                 if (count <= 0) { cb && cb (null, instances);}
                             }
+console.log ("data.Reservations.length- length:%j", data.Reservations.length);
+
                             data.Reservations.forEach (function (revervation){
                                 revervation.Instances.forEach (function (instance){
                                     EC2.describeInstanceAttribute ({Attribute: "userData", InstanceId:instance.InstanceId}, function (err, data){
+console.log ("EC2.describeInstanceAttribute - data:%j", data);
                                         if (!err && data.UserData && data.UserData.Value){
                                             var user_data = new Buffer(data.UserData.Value, 'base64').toString ();
                                             if (user_data) {
