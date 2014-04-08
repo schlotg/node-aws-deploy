@@ -474,6 +474,9 @@
                     http.createServer (handleRequests).listen (http_port);
                 }
             }
+            else {
+                console.log ("NO PULL SERVER STARTED!!!");
+            }
         });
     }
     else{
