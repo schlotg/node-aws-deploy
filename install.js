@@ -5,10 +5,26 @@ var async = require ("async");
 var app_path, ssh_file, local, email;
 var i = 0;
 var prompt = require ("prompt");
-var config = {};
+var config = {}, config_file, local;
+
+function updateConfig (){
+    if (config){
+        var data = JSON.stringify (config);
+        fs.writeFileSync (".app-config.json", data);
+    }
+}
 
 async.waterfall ([
 
+    function (done){
+        try {config_file = fs.readFileSync (".app-config.json");}
+        catch (err){ error = err;}
+
+        if (config_file){
+            try {config = JSON.parse (config_file);}
+            catch (err){ error = err;}
+        }
+    },
 
     function (done){
         // Installs the whole setup
@@ -21,10 +37,12 @@ async.waterfall ([
 
     function (done){
         console.log (++i + ") Is this a 'remote' install? (If this is on a remote server the answer is y)");
+        if (config.applicationDirectory) {console.log ("Current Value = " + config.remote + " (Press <enter> to keep)");}
         prompt.get (['(y/n)'], function (err, results){
-            var answer = (results['(y/n)'] === 'y');
-            local = !answer;
+            config.remote = (results['(y/n)'] || config.remote || 'n');
+            local = (config.remote === 'n');
             config.sudo = (local) ? "" : "sudo";
+            updateConfig ();
             done ();
         });
     },
@@ -32,8 +50,12 @@ async.waterfall ([
     function (done){
         if (local){
             console.log (++i + ") Enter your desired application's full path. (no file names. Example  '/User/me/MyCoolApplication')");
+            if (config.applicationDirectory) {console.log ("Current Value = " + config.applicationDirectory + " (Press <enter> to keep)");}
             prompt.get (['folder'], function (err, results){
-                config.applicationDirectory = results['folder'];
+                if (results['folder']){
+                    config.applicationDirectory = results['folder'];
+                    updateConfig ();
+                }
                 done ();
             });
         }
@@ -44,32 +66,49 @@ async.waterfall ([
 
     function (done){
         console.log (++i + ") Enter your application's name");
+        if (config.applicationName) {console.log ("Current Value = " + config.applicationName + " (Press <enter> to keep)");}
         prompt.get (['name'], function (err, results){
-            config.applicationName = results['name'];
+            if (results['name']){
+                config.applicationName = results['name'];
+                updateConfig ();
+            }
             done ();
         });
     },
 
     function (done){
         console.log (++i + ") Enter any command line arguments you would like passed in (Entered as you would on the command line)");
-        prompt.get (['commandArguments'], function (err, results){
-            config.commandArguments = results['commandArguments'];
+        if (config.commandArguments) {console.log ("Current Value = " + config.commandArguments + " (Press <enter> to keep)");}
+        prompt.get (['arguments'], function (err, results){
+            if ( results['arguments']){
+                config.commandArguments = results['arguments'];
+                updateConfig ();
+            }
             done ();
         });
     },
 
     function (done){
         console.log (++i + ') Enter any environment variables you would like set when your application is run (Entered as a JSON. Example: {"APP_ENV":"production"}');
-        prompt.get (['appEnvironmentVariables'], function (err, results){
-            config.appEnvironmentVariables = results['appEnvironmentVariables'];
+        if (config.appEnvironmentVariables) {console.log ("Current Value = " + config.appEnvironmentVariables + " (Press <enter> to keep)");}
+        prompt.get (['environment variables'], function (err, results){
+            if (results['environment variables']){
+                config.appEnvironmentVariables = results['environment variables'];
+                updateConfig ();
+            }
             done ();
         });
     },
 
     function (done){
         console.log (++i + ") Enter your application's entry point (defaults to 'start.js')");
+        if (config.appEntry) {console.log ("Current Value = " + config.appEntry + " (Press <enter> to keep)");}
         prompt.get (['entry point'], function(err, results) {
-            config.appEntry = results['entry point'];
+            results['entry point'] = results['entry point'] || "start.js";
+            if (results['entry point']){
+                config.appEntry = results['entry point'];
+                updateConfig ();
+            }
             done ();
         });
     },
@@ -121,16 +160,25 @@ async.waterfall ([
         if (!local){
             console.log (++i + ") Enter the pull information, what triggers it how its configured, etc...");
             console.log ("\t pullPort: <set this to the port for a pull requests> - defaults to 8000");
+            if (config.pullPort) {console.log ("\t\tCurrent Value = " + config.pullPort + " (Press <enter> to keep)");}
             console.log ("\t pullKey: <path to a ssh key file for the HTTPS Server>");
+            if (config.pullKey) {console.log ("\t\tCurrent Value = " + config.pullKey + " (Press <enter> to keep)");}
             console.log ("\t pullCert: <path to a ssh cert file for the HTTPS Server>");
+            if (config.pullCert) {console.log ("\t\tCurrent Value = " + config.pullCert + " (Press <enter> to keep)");}
             console.log ("\t pullCa: <array of paths to the certificate authority files> (optional)");
+            if (config.pullCa) {console.log ("\t\tCurrent Value = " + config.Ca + " (Press <enter> to keep)");}
             console.log ("\t pullPassphrase: <string - phrase that the certificate was generated with> (optional)");
+            if (config.pullPassphrase) {console.log ("\t\tCurrent Value = " + config.pullPassphrase + " (Press <enter> to keep)");}
             console.log ("\t pullSecret: <secret phrase that this server uses to identify as a valid pull request> (optional))");
+            if (config.pullSecret) {console.log ("\t\tCurrent Value = " + config.pullSecret + " (Press <enter> to keep)");}
             console.log ("\t pullBranch: <the branch that this server should pull from on pull requests> (defaults to master))");
+            if (config.pullBranch) {console.log ("\t\tCurrent Value = " + config.pullBranch + " (Press <enter> to keep)");}
+            if (config.appEnvironmentVariables) {console.log ("Current Value = " + config.appEnvironmentVariables + " (Press <enter> to keep)");}
             prompt.get (["pullPort", "pullKey", "pullCert", "pullCa", "pullPassphrase", "pullSecret", "pullBranch"], function (err, results){
                 for (var k in results){
-                    config[k] = results[k];
+                    config[k] = results[k] || config[k];
                 }
+                updateConfig ();
                 done ();
             });
 
@@ -143,12 +191,16 @@ async.waterfall ([
         if (!local){
             console.log (++i + ") Enter AWS SDK Information so that this server can talk to others on a pull request");
             console.log ("\t accessKeyId: <AWS API Access key 'XXXXXXXXXXXXXXXXXXXX'>");
+            if (config.accessKeyId) {console.log ("\t\tCurrent Value = " + config.accessKeyId + " (Press <enter> to keep)");}
             console.log ("\t secretAccessKey: <AWS Secret Access key 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'>");
+            if (config.secretAccessKey) {console.log ("\t\tCurrent Value = " + config.secretAccessKey + " (Press <enter> to keep)");}
             console.log ("\t region: <aws region that the servers are located in. EX 'us-east-1'>");
+            if (config.region) {console.log ("\t\tCurrent Value = " + config.region + " (Press <enter> to keep)");}
             prompt.get (["accessKeyId", "secretAccessKey", "region"], function (err, results){
                 for (var k in results){
-                    config[k] = results[k];
+                    config[k] = results[k] || config[k];
                 }
+                updateConfig ();
                 done ();
             });
 
@@ -160,7 +212,7 @@ async.waterfall ([
 
     function (done){
         if (!local){
-            console.log (++i + ") Now that your Git repository has been configured, enter the ssh url for remote access so this server can clone it:");
+            console.log (++i + ") Now that your Git repository has been configured, enter the ssh url for remote access so this server can clone it (Press Enter to Skip):");
             prompt.get (['Git repository URL'], function (err, results){
                 var git_url = results['Git repository URL'];
                 if (git_url){
@@ -179,7 +231,7 @@ async.waterfall ([
                             }
                             console.log ("Configuring the branch and pulling all dependencies....");
                             child = exec ('cd ' + config.applicationDirectory + ' ; ' + config.sudo + ' git checkout ' + config.pullBranch +
-                                ' ; ' + config.sudo + ' npm install -d ; sudo mkdir logs ; sudo chmod 777 logs', function (err, std, ster){
+                                ' ; ' + config.sudo + ' npm install -d ; sudo mkdir logs ; sudo chmod 755 logs', function (err, std, ster){
                                 console.log (std);
                                 done ();
                             });
@@ -198,8 +250,7 @@ async.waterfall ([
 
 ], function (err){
     if (!err){
-        var data = JSON.stringify (config);
-        fs.writeFileSync (".app-config.json", data);
+        updateConfig ();
         console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to '.app-config.json' in your app's home directory, " +
             "The settings can always be changed by manually editing the '.app-config.json' file.");
         if (!local){
