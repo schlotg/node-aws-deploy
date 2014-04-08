@@ -421,7 +421,7 @@ console.log (req);
                             }
                             else{
                                 console.log ("\nIgnoring Pull Request, wrong branch. \n\tListening for: " + config.branch +
-                                    "\n\t Recieved:" + body.ref);
+                                    "\n\t Recieved:" + req.body.ref);
                             }
                         });
                     }
