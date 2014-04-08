@@ -44,10 +44,10 @@ function post (url, body, port, secure, path, cb){
 
 
 var url = "ec2-54-205-55-16.compute-1.amazonaws.com";
-var body = {ref:"new_deploy"};
+var body = {ref:"develop"};
 var port = 8000;
 var secure = (url.search ("https:") !== -1);
-var path = "/pull?secret=no_limits";
+var path = "/pull?secret=no_limits&master=true";
 post (url, body, port, secure, path, function (err, result){
     if (err){
         console.log ("Error during post:" + err);

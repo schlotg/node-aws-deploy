@@ -57,7 +57,7 @@ function createCloudInterface() {
             var instances = [];
             if (EC2){
                 EC2.describeInstances(function(error, data) {
-                    if (error) { cb && cb (err);}
+                    if (error) { cb && cb (error);}
                     else {
                         if (data.Reservations.length){
                             var count = data.Reservations.length;
