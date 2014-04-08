@@ -9,7 +9,7 @@ var config = {}, config_file, local;
 
 function updateConfig (){
     if (config){
-        var data = JSON.stringify (config);
+        var data = JSON.stringify (config, null, 4);
         fs.writeFileSync (".app-config.json", data);
     }
 }

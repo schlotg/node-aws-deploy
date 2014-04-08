@@ -418,7 +418,7 @@
                                 }, req.query.master, req);
                             }
                             else{
-                                var msg = "\nIgnoring Pull Request, wrong branch. \n\tListening for: " + config.branch +
+                                var msg = "\nIgnoring Pull Request, wrong branch. \n\tListening for: " + listensTo +
                                     "\n\t Recieved:" + req.body.ref;
                                 console.log (msg);
                                 res.writeHead(404, {'Content-Type': 'text/plain'});

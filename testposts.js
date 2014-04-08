@@ -44,7 +44,7 @@ function post (url, body, port, secure, path, cb){
 
 
 var url = "ec2-54-205-55-16.compute-1.amazonaws.com";
-var body = {test:"master"};
+var body = {ref:"new_deploy"};
 var port = 8000;
 var secure = (url.search ("https:") !== -1);
 var path = "/pull?secret=no_limits";
