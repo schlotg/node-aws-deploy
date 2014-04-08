@@ -374,8 +374,6 @@
 
             // create a server to listen for pull requests
             function handleRequests (req, res){
-console.log ("NEW REQUEST");
-console.log (req);
                 function parseURL (req){
                     var url_in = url.parse(req.url,true);
                     req.query = url_in.query;
@@ -420,8 +418,11 @@ console.log (req);
                                 }, req.query.master, req);
                             }
                             else{
-                                console.log ("\nIgnoring Pull Request, wrong branch. \n\tListening for: " + config.branch +
-                                    "\n\t Recieved:" + req.body.ref);
+                                var msg = "\nIgnoring Pull Request, wrong branch. \n\tListening for: " + config.branch +
+                                    "\n\t Recieved:" + req.body.ref;
+                                console.log (msg);
+                                res.writeHead(404, {'Content-Type': 'text/plain'});
+                                res.end("Ignoring Pull Request, wrong branch.");
                             }
                         });
                     }
