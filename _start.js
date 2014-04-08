@@ -405,6 +405,7 @@ console.log (req);
                     if (valid_request){
                         bodyParser (req, res, function (){
                             var listensTo = (instance_data && instance_data.listensTo) ? instance_data.listensTo : "";
+                            req.body.ref = req.body.ref || "";
                             if (req.body.ref.search (listensTo) !== -1){
                                 pull (function (){
                                     res.writeHead(200, {'Content-Type': 'text/plain'});

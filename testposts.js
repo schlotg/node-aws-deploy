@@ -47,7 +47,7 @@ var url = "ec2-54-205-55-16.compute-1.amazonaws.com";
 var body = {test:"master"};
 var port = 8000;
 var secure = (url.search ("https:") !== -1);
-var path = "/pull";
+var path = "/pull?secret=no_limits";
 post (url, body, port, secure, path, function (err, result){
     if (err){
         console.log ("Error during post:" + err);
