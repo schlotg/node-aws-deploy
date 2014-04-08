@@ -292,8 +292,14 @@
         }
         // enter the application
         var workingDirectory = config.applicationDirectory || process.cwd();
-        var appEntry = config.appEntry || "start.js";
-        console.log ("\nSTARTING APPLICATION CALLING: " + appEntry);
+        var appEntry = config.appEntry || "start.js", date;
+        if (cluster.isMaster){
+            date = new Date ();
+            console.log ("\n\n**********************************************");
+            console.log ("\tSTARTING APPLICATION %s CALLING: %s", config.applicationName, appEntry);
+            console.log ("\t\tDate:" + date.toUTCString ());
+            console.log ("n**********************************************\n\n");
+        }
         require (workingDirectory + '/' + appEntry);
     }
 
