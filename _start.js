@@ -430,7 +430,7 @@ console.log (req);
                         console.log ("\nPull Not Authorized @" + date.toString ());
                         console.log ("	Secret passed in:" + !!(req.query.secret));
                         console.log ("	Secret required:" + !!config.pullSecret);
-                        console.log ("	Secrets Match:" + (config.pullSecret === params.secret));
+                        console.log ("	Secrets Match:" + (config.pullSecret === req.query.secret));
                     }
                 }
                 else{
