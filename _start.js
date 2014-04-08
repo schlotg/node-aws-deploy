@@ -311,6 +311,7 @@
 
     console.log ("working directory:" + process.cwd ());
     console.log (process.env);
+    process.env["WORKING_DIR"] = process.cwd ();
 
     try {config_file = fs.readFileSync (".app-config.json");}
     catch (err){ error = err;}
