@@ -86,6 +86,7 @@ Your application will now run every time the server is started. On start and res
 On a web hook post node-aws-deploy will find all the running AWS instances of this same type and restart them so updates are propagated across the entire scale group.
 
 Once your application is setup and running correctly, you will want to create a AMI that will be used in your scale group. To create an AMI:
+
 1. Open the AWS console and select EC2
 2. Go to instances, and find the instance that was just configured with node-aws-deploy
 3. Write down its instance id
