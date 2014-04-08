@@ -136,7 +136,7 @@
             else { // else we are the master so find all the other AWS instances to pull from
                 // get other instances that our are same type and already running
                 var secure = (req.href.search ("https://") !== -1);
-                cloud.getInstances (function (instances){
+                cloud.getInstances (function (err, instances){
                     instances && instances.forEach (function (instance){
                         if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
                             post (instance.dns, req,body, config.pullPort, secure, url.format (req.query));
