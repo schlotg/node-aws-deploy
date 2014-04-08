@@ -262,23 +262,34 @@
         // set command line args
         if (config.commandArguments){
             var args = config.commandArguments.split (" ");
+            if (cluster.isMaster){ // only output this info once
+                console.log ("Set the following Command Line Arguments:\n\t" + config.commandArguments);
+            }
             args && args.forEach (function (arg){
                 process.argv.push (arg);
             });
+        }
+        else if (cluster.isMaster) {
+            console.log ("No Command Line Arguments set!");
         }
         // set environment variables
         if (config.appEnvironmentVariables){
             var env_vars;
             try {env_vars = JSON.parse (config.appEnvironmentVariables);}
-            catch (err) {console.log ("Error pasring the environment variables JSON:" + err);}
+            catch (err) {console.log ("Error parsing the environment variables JSON:" + err);}
             if (env_vars){
+                if (cluster.isMaster){ // only output this info once
+                    console.log ("Set the following Environment Variables:");
+                    console.log (env_vars);
+                }
                 for (var k in env_vars){
                     process.env[k] = env_vars[k];
                 }
             }
         }
-console.log (config.appEnvironmentVariables);
-console.log (process.env);
+        else if (cluster.isMaster){
+            console.log ("No Environment Variables set!");
+        }
         // enter the application
         var workingDirectory = config.applicationDirectory || process.cwd();
         var appEntry = config.appEntry || "start.js";
