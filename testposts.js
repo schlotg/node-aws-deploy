@@ -31,15 +31,19 @@ console.log ("3");
         res.on('end', function (){
             cb (null, result);
         });
+console.log ("4");
     });
     req.on('error', function(e) {
         console.log('problem with request: ' + e.message);
         cb (e.message);
+console.log ("5");
     });
 
     // write data to request body
+console.log ("6");
     req.write(body);
     req.end();
+console.log ("7");
 }
 
 var url = "http://ec2-54-205-55-16.compute-1.amazonaws.com/";
