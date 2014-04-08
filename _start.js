@@ -305,15 +305,15 @@
     }
 
     /////////////////// CODE EXECUTION STARTS HERE ///////////////////////////
-    console.log ("********** Node-Deploy Started *********");
-    var date = new Date ();
-    console.log (date.toString ());
-
-    console.log ("working directory:" + process.cwd ());
-    console.log (process.env);
-    process.env["WORKING_DIR"] = process.cwd ();
-
-    try {config_file = fs.readFileSync (".app-config.json");}
+    if (cluster.isMaster){
+        console.log ("********** Node-Deploy Started *********");
+        var date = new Date ();
+        console.log (date.toString ());
+        console.log ("working directory:" + process.cwd ());
+        process.env["WORKING_DIR"] = process.cwd ();
+    }
+    var path = process.env["WORKING_DIR"];
+    try {config_file = fs.readFileSync (path + "/.app-config.json");}
     catch (err){ error = err;}
 
     if (config_file){
