@@ -295,10 +295,11 @@
         var appEntry = config.appEntry || "start.js", date;
         if (cluster.isMaster){
             date = new Date ();
-            console.log ("\n\n**********************************************");
-            console.log ("\tSTARTING APPLICATION %s CALLING: %s", config.applicationName, appEntry);
+            console.log ("\n\n****************************************");
+            console.log ("\tSTARTING APPLICATION %s", config.applicationName);
+            console.log ("\tCALLING: %s", appEntry);
             console.log ("\t\tDate:" + date.toUTCString ());
-            console.log ("n**********************************************\n\n");
+            console.log ("****************************************\n\n");
         }
         require (workingDirectory + '/' + appEntry);
     }
