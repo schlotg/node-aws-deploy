@@ -272,6 +272,8 @@
                 process.env[k] = config.appEnvironmentVariables[k];
             }
         }
+console.log (config.appEnvironmentVariables);
+console.log (process.env);
         // enter the application
         var workingDirectory = config.applicationDirectory || process.cwd();
         var appEntry = config.appEntry || "start.js";
