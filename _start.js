@@ -88,8 +88,6 @@
         var server = (secure) ? https : http;
         var req = server.request(options, function(res) {
             var result = "";
-            //console.log('STATUS: ' + res.statusCode);
-            //console.log('HEADERS: ' + JSON.stringify(res.headers) + '\n');
             res.setEncoding('utf8');
             res.on('data', function (chunk) {result += chunk;});
             res.on('end', function (){

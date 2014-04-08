@@ -52,10 +52,6 @@ Generate a ssh key (use your email address):
     sudo ssh-keygen -t rsa -C "your_email@mail.com"
     press <enter> for the rest of the questions
 
-In order for this to work correctly you need to have a valid package.json for your application and include the the following line in your list of dependencies:
-
-    "node-aws-deploy":"git://github.com/schlotg/node-aws-deploy.git"
-
 Install Git and clone the install script:
 
         sudo yum install git
@@ -63,9 +59,28 @@ Install Git and clone the install script:
         sudo chmod 777 node-aws-deploy/install_aws
         sudo node-aws-deploy/install_aws
 
-To launch type
+To launch type:
 
     sudo start <your application name>
+
+To stop type:
+
+    sudo stop <your application name>
+
+To restart type:
+
+    sudo restart <your application name>
+
+To manually launch it so you can see output at the console:
+
+    sudo stop <your application name>
+    cd ~/node-aws-deploy
+    sudo node _start.js
+
+To reconfigure you can always relaunch install.js from the ~/node-aws-deploy directory or if you know 'vi' you can manually edit the .app-config.json by typing:
+
+    cd ~/node-aws-deploy
+    vi .app-config.json
 
 Your application will now run every time the server is started. On start and restart node-aws-deploy will: grab the latest code from your git repository branch and look for NPM dependency changes.
 On a web hook post node-aws-deploy will find all the running AWS instances of this same type and restart them so updates are propagated across the entire scale group.
