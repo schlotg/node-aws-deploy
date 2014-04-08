@@ -137,18 +137,25 @@
                 // get other instances that our are same type and already running
                 var secure = (req.href.search ("https://") !== -1);
                 cloud.getInstances (function (err, instances){
-                    instances && instances.forEach (function (instance){
-                        if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
-                            post (instance.dns, req,body, config.pullPort, secure, url.format (req.query));
-                        }
-                    });
-                    // now pull and restart ourselves
-                    _pull (function (){
-                        if (need_restart){
-                            process.exit(0);
-                        }
+                    if (instances && instances.length){
+                        console.log ("Found " + instances.length + " instances, re-posting.");
+                        instances.forEach (function (instance){
+                            if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
+                                post (instance.dns, req,body, config.pullPort, secure, url.format (req.query));
+                            }
+                        });
+                        // now pull and restart ourselves
+                        _pull (function (){
+                            if (need_restart){
+                                process.exit(0);
+                            }
+                            cb && cb ();
+                        });
+                    }
+                    else{
+                        console.log ("No instances found");
                         cb && cb ();
-                    });
+                    }
                 });
             }
         }
