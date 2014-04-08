@@ -59,7 +59,7 @@ Install Git and clone the install script:
         sudo chmod 777 node-aws-deploy/install_aws
         sudo node-aws-deploy/install_aws
 
-###Setting up the AWS Node Server from the node-aws-deploy image
+###Setting up a AWS Node Server from the node-aws-deploy image
 ====
 
 An even easier approach is to create an instance off of the aws-node-deploy image in the Amazon Store
@@ -93,7 +93,7 @@ Ensure you have the latest node-aws-deploy:
         sudo git pull
         sudo node install.js
 
-###Using aws-node-server
+###Using node-aws-deploy
 ====
 
 To launch type:
