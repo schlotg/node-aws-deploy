@@ -85,5 +85,14 @@ To reconfigure you can always relaunch install.js from the ~/node-aws-deploy dir
 Your application will now run every time the server is started. On start and restart node-aws-deploy will: grab the latest code from your git repository branch and look for NPM dependency changes.
 On a web hook post node-aws-deploy will find all the running AWS instances of this same type and restart them so updates are propagated across the entire scale group.
 
+Once your application is setup and running correctly, you will want to create a AMI that will be used in your scale group. To create an AMI:
+1. Open the AWS console and select EC2
+2. Go to instances, and find the instance that was just configured with node-aws-deploy
+3. Write down its instance id
+4. Select volumes and select and inspect one until you find a match for the instance id in the attachment information.
+5. With that volume selected, select actions->create snapshot. Name it appropriately and click create.
+6. Go to snapshots and find your new created snapshot. It might take a few minutes for it to finish.
+7. Select the snapshot and the then select create->image. Name it appropriately and click create.
+8. This new AMI should now be available and listed in the AMI section. Use it to launch new instances, create scale groups, etc...
 
 

@@ -41,7 +41,7 @@ env ENTRY=\"/home/ec2-user/node-aws-deploy\"
 start on started mountall
 stop on shutdown
 respawn
-respawn limit 99 5
+#respawn limit 99 5
 script
         cd \$ENTRY
         exec sudo node \$ENTRY/_start.js >> \$APP_PATH/logs/log 2>&1
