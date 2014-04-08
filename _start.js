@@ -374,6 +374,8 @@
 
             // create a server to listen for pull requests
             function handleRequests (req, res){
+console.log ("NEW REQUEST");
+console.log (req);
                 function parseURL (req){
                     var url_in = url.parse(req.url,true);
                     req.query = url_in.query;
@@ -423,7 +425,7 @@
                         });
                     }
                     else{
-                        res.res.writeHead(200, {'Content-Type': 'text/plain'});
+                        res.writeHead(200, {'Content-Type': 'text/plain'});
                         res.end("Pull Not Authorized");
                         console.log ("\nPull Not Authorized @" + date.toString ());
                         console.log ("	Secret passed in:" + !!params.secret);
@@ -432,7 +434,7 @@
                     }
                 }
                 else{
-                    res.res.writeHead(404, {'Content-Type': 'text/plain'});
+                    res.writeHead(404, {'Content-Type': 'text/plain'});
                     res.end("Not Found");
                 }
             }

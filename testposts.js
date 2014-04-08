@@ -27,16 +27,20 @@ console.log ("3");
         //console.log('STATUS: ' + res.statusCode);
         //console.log('HEADERS: ' + JSON.stringify(res.headers) + '\n');
         res.setEncoding('utf8');
-        res.on('data', function (chunk) {result += chunk;});
+        res.on('data', function (chunk) {
+console.log ("4a");
+            result += chunk;
+        });
         res.on('end', function (){
+console.log ("4b");
             cb (null, result);
         });
 console.log ("4");
     });
     req.on('error', function(e) {
+console.log ("5");
         console.log('problem with request: ' + e.message);
         cb (e.message);
-console.log ("5");
     });
 
     // write data to request body
@@ -46,8 +50,9 @@ console.log ("6");
 console.log ("7");
 }
 
-var url = "http://ec2-54-205-55-16.compute-1.amazonaws.com/";
-var body = "master";
+
+var url = "ec2-54-205-55-16.compute-1.amazonaws.com";
+var body = {test:"master"};
 var port = 8000;
 var secure = (url.search ("https:") !== -1);
 var path = "/pull";
