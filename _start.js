@@ -309,6 +309,8 @@
     var date = new Date ();
     console.log (date.toString ());
 
+    console.log ("working directory:" + process.cwd ());
+
     try {config_file = fs.readFileSync (".app-config.json");}
     catch (err){ error = err;}
 
