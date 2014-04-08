@@ -428,7 +428,7 @@ console.log (req);
                         res.writeHead(200, {'Content-Type': 'text/plain'});
                         res.end("Pull Not Authorized");
                         console.log ("\nPull Not Authorized @" + date.toString ());
-                        console.log ("	Secret passed in:" + !!params.secret);
+                        console.log ("	Secret passed in:" + !!(params && params.secret));
                         console.log ("	Secret required:" + !!config.pullSecret);
                         console.log ("	Secrets Match:" + (config.pullSecret === params.secret));
                     }
