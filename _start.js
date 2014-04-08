@@ -268,8 +268,13 @@
         }
         // set environment variables
         if (config.appEnvironmentVariables){
-            for (var k in config.appEnvironmentVariables){
-                process.env[k] = config.appEnvironmentVariables[k];
+            var env_vars;
+            try {env_vars = JSON.parse (config.appEnvironmentVariables);}
+            catch (err) {console.log ("Error pasring the environment variables JSON:" + err);}
+            if (env_vars){
+                for (var k in env_vars){
+                    process.env[k] = env_vars[k];
+                }
             }
         }
 console.log (config.appEnvironmentVariables);
