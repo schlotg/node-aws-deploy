@@ -1,4 +1,4 @@
-Node AWS Deploy (Warning still under active initial development!)
+Node AWS Deploy
 =====
 This is my attempt at an easy to use and robust deployment and install system to get your Node app up and running, quickly and easily on AWS. node-aws-deploy is designed to take a web hook HTTP post from a Git repository service and than automatically trigger a deployment across multiple servers. New servers that are started up will automatically grab the latest changes.
 node-aws-deploy sits outside your application so it doesn't clutter up your code base. It relies heavily on the package.json file so your application must have one to work properly.
