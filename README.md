@@ -189,9 +189,11 @@ To install and setup locally:
     1. Clone the repository in your application folder
 
         git clone https://github.com/schlotg/node-aws-deploy.git
+        cd node-aws-deploy
+        npm install -d
 
     2. Run the install.js script from within the node-aws-deploy folder
-        
+
         cd node-aws-deploy
         node install.js
 
