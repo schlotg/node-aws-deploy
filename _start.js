@@ -67,6 +67,7 @@
     var updating_on = false;
     var sudo;
     var instance_data;
+    var secure_post;
 
 
     // post a command out
@@ -141,14 +142,13 @@
             }
             else { // else we are the master so find all the other AWS instances to pull from
                 // get other instances that our are same type and already running
-                var secure = (req.href.search ("https://") !== -1);
                 req.query.master = false;
                 cloud.getInstances (function (err, instances){
                     if (instances && instances.length){
                         console.log ("Found " + instances.length + " instances, re-posting.");
                         instances.forEach (function (instance){
                             if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
-                                post (instance.dns, req.body, config.pullPort, secure, url.format ({pathname:"/pull", query:req.query}));
+                                post (instance.dns, req.body, config.pullPort, secure_post, url.format ({pathname:"/pull", query:req.query}));
                             }
                         });
                         // now pull and restart ourselves
@@ -491,10 +491,12 @@ console.log ("req.body.ref:%j", req.body.ref);
                     }
                 }
                 if (key && cert){
+                    secure_post = true;
                     console.log ("\nHTTPS Pull Server Started. Listening on Port:" + http_port);
                     https.createServer (options, handleRequests).listen (http_port);
                 }
                 else{
+                    secure_post = false;
                     console.log ("\nWARNING cert and key not specified or invalid. Falling back to HTTP");
                     console.log ("HTTP Pull Server Started. Listening on Port:" + http_port);
                     http.createServer (handleRequests).listen (http_port);

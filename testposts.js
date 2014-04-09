@@ -43,7 +43,8 @@ function post (url, body, port, secure, path, cb){
 }
 
 
-var url = "ec2-54-80-137-194.compute-1.amazonaws.com";
+//var url = "ec2-54-80-137-194.compute-1.amazonaws.com";
+var url = "ec2-54-82-234-63.compute-1.amazonaws.com";
 var body = {ref:"develop"};
 var port = 8000;
 var secure = true;
