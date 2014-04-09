@@ -402,10 +402,13 @@
                             if (body.length > 524488) { // limit the most data someone can send to 1/2 a meg
                                 request.connection.destroy();
                             }
+console.log ("body_on_:" + body);
                         });
                         req.on('end', function () {
                             req.body = qs.parse(body);
                             if (func){func (req, res);}
+console.log ("body_on_end:" + body);
+console.log (req.body);
                         });
                     }
                 }
