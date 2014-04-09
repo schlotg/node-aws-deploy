@@ -184,6 +184,27 @@ node-aws-deploy when used locally on your development machine has the following 
         nodemon _start.js
 
 To use node-aws-deploy for multiple projects on a single development machine, it works best to have a copy of node-aws-deploy inside each project with its own configuration specific to each project.
+To install and setup locally:
+
+    1. Clone the repository in your application folder
+
+        git clone https://github.com/schlotg/node-aws-deploy.git
+
+    2. Run the install.js script from within the node-aws-deploy folder
+    3. Answer the questions to configure node-aws-deploy
+    4. If you want to use nodemon install it globally.
+
+        npm install -g nodemon
+
+    5. launch the application from the terminal with:
+
+        cd node-aws-deploy
+        nodemon _start.js
+
+            or
+
+        cd node-aws-deploy
+        node _start.js
 
 ###Using a pre-launch File
 
