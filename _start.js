@@ -404,9 +404,6 @@
                             }
                         });
                         req.on('end', function () {
-
-console.log (body);
-                            //body = qs.unescape(body);
                             try{req.body = JSON.parse (body);}
                             catch (e){req.body = qs.parse (body);}
                             if (func){func (req, res);}
@@ -423,8 +420,6 @@ console.log (body);
                         bodyParser (req, res, function (){
                             var listensTo = (instance_data && instance_data.listensTo) ? instance_data.listensTo : "";
                             req.body.ref = req.body.ref || "";
-console.log ("type:" + typeof req.body.ref);
-console.log ("req.body.ref:%j", req.body.ref);
                             if (req.body.ref.search (listensTo) !== -1){
                                 var _master = req.query.master;
                                 pull (function (){
@@ -433,7 +428,7 @@ console.log ("req.body.ref:%j", req.body.ref);
                                     else {res.end("Pull Accepted"); }
                                     var date = new Date ();
                                     console.log ("\nPull Command, master:" + _master + " @" + date.toString ());
-                                    console.log ("	body:%j", req.body);
+                                    //console.log ("	body:%j", req.body);
                                     if (pull_error){
                                         console.log ("	There were Errors:%j", pull_error);
                                     }
