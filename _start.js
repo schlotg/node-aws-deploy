@@ -139,6 +139,7 @@
                         console.log ("Found " + instances.length + " instances, re-posting.");
                         instances.forEach (function (instance){
                             if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
+console.log ("Posting to:" + instance.dns);
                                 post (instance.dns, req.body, config.pullPort, secure, url.format (req.query));
                             }
                         });
