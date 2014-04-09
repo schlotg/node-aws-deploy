@@ -44,6 +44,10 @@
 
  "sudo": <Mac and Linux only, should we prefix all shell commands with sudo?> - defaults to no sudo
 
+ // This file must conform the following interface: It must have a start function that is exported that excepts a callback
+ // as a parameter and calls the callback when compete to start the application.
+ "preLaunch": <a javascript file to execute relative to the application directory before starting the app>
+
  // To Trigger a pull and restart
 
 
@@ -273,6 +277,7 @@
     }
     // start the application
     function startApp (){
+
         // set command line args
         if (config.commandArguments){
             var args = config.commandArguments.split (" ");
@@ -361,7 +366,6 @@
                 updating_on = true;
             }
 
-
             // change directory to the app working directory. Default to the current directory
             var workingDirectory = config.applicationDirectory || process.cwd();
             console.log ("\nWorking Directory is:" + process.cwd());
@@ -383,7 +387,16 @@
                         // check for dependency changes
                         checkNodeDependencies (function (){
                             checkNPMDependencies (function (){
-                                startApp ();
+                                var workingDirectory = config.applicationDirectory || process.cwd();
+                                if (cluster.isMaster && config.prelaunch){
+                                    var pre_launch = require (workingDirectory + '/' + config.preLaunch);
+                                    pre_launch.start (function (){
+                                        startApp ();
+                                    });
+                                }
+                                else{ // no prelaunch file
+                                    startApp ();
+                                }
                             });
                         });
                     }, master);

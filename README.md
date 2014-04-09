@@ -72,8 +72,8 @@ Install Git and clone the install script:
         sudo chmod 777 node-aws-deploy/install_aws
         sudo node-aws-deploy/install_aws
 
+
 ###Setting up a AWS Node Server from the node-aws-deploy image
-====
 
 An even easier approach is to create an instance off of the aws-node-deploy image in the Amazon Store
 
@@ -106,8 +106,8 @@ Ensure you have the latest node-aws-deploy:
         sudo git pull
         sudo node install.js
 
+
 ###Using node-aws-deploy
-====
 
 To launch type:
 
@@ -142,8 +142,8 @@ Once your application is setup and running correctly, you will want to create a 
 3. With that volume selected, select actions->create image. Name it appropriately and click create.
 4. This new AMI should now be available and listed in the AMI section. Use it to launch new instances, create scale groups, etc...
 
+
 ###Triggering live updates
-====
 
 Most Git repositories have a concept of a webhook. This is a mechanism that performs a post or get on a push to your directory. node-aws-deploy only supports pushes at this time. The examples given below were written for gitHub's web hooks but should be applicable to other remote repositories.
 
@@ -160,6 +160,7 @@ If a valid certificate is not configured with node-aws-deploy, a secure webhook 
 
 For Github select JSON for the payload and the 'pullField' in .app-config.json should be set to 'ref'.
 
+
 ###Misc
 
 node-aws-deploy puts the following into environment variables which you application is free to inspect and use:
@@ -167,6 +168,7 @@ node-aws-deploy puts the following into environment variables which you applicat
              process.env['CLOUD'] = <bool> is this running on an AWS server
              process.env['INSTANCE_ID'] = <string> EC2 instance id of this server.
              process.env['INSTANCE_DATA'] = <JSON> the user data associated with this ec2 instance
+
 
 ###Running Locally
 
@@ -182,3 +184,16 @@ node-aws-deploy when used locally on your development machine has the following 
 
 To use node-aws-deploy for multiple projects on a single development machine, it works best to have a copy of node-aws-deploy inside each project with its own configuration specific to each project.
 
+###Using a pre-launch File
+
+You can specify a pre-launch file that gets executed prior to the application launching. This allows you to start services, create files, etc... To make this work the file must be a node java script files that works with require. It must exports a 'start' function. The start function takes a callback that will be called when the pre-launch is done executing. Calling the callback will signal node-aws-deploy to continue execution by executing the file that is the entry point for your application.
+Specify the pre-launch file by setting it manually in .app-config.json or using install.js. The file name must be relative to the application path.
+
+In its simplest form the pre-launch file would look like something like this:
+
+    exports.start = function (cb){
+        // do pre-launch stuff here
+        console.log ("hello world");
+        // call callback when done
+        cb ();
+    };

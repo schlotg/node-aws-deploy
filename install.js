@@ -102,7 +102,7 @@ async.waterfall ([
     },
 
     function (done){
-        console.log (++i + ") Enter your application's entry point (defaults to 'start.js')");
+        console.log (++i + ") Enter your application's entry point (defaults to 'start.js'). The file name is relative to your application folder");
         if (config.appEntry) {console.log ("Current Value = " + config.appEntry + " (Press <enter> to keep)");}
         prompt.get (['entry point'], function(err, results) {
             results['entry point'] = results['entry point'] || "start.js";
@@ -113,6 +113,20 @@ async.waterfall ([
             done ();
         });
     },
+
+    function (done){
+        console.log (++i + ") Enter a javascript file that you want executed prior to launching the application (optional). The file name is relative to your application folder");
+        if (config.preLaunch) {console.log ("Current Value = " + config.preLaunch + " (Press <enter> to keep)");}
+        prompt.get (['pre-launch'], function(err, results) {
+            results['pre-launch'] = results['pre-launch'];
+            if (results['pre-launch']){
+                config.preLaunch = results['pre-launch'];
+                updateConfig ();
+            }
+            done ();
+        });
+    },
+
     function (done){
         if (local){
             console.log ("Please take a second ensure you are set up to clone your repository. This might require you to create an ssh key pair or simply use credentials.");
