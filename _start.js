@@ -421,13 +421,16 @@
                         bodyParser (req, res, function (){
                             var listensTo = (instance_data && instance_data.listensTo) ? instance_data.listensTo : "";
                             req.body.ref = req.body.ref || "";
+console.log ("type:" + typeof req.body.ref);
+console.log ("req.body.ref:%j", req.body.ref);
                             if (req.body.ref.search (listensTo) !== -1){
+                                var _master = req.query.master;
                                 pull (function (){
                                     res.writeHead(200, {'Content-Type': 'text/plain'});
                                     if (pull_error){ res.end("Pull Accepted. There were Errors:" + pull_error); }
                                     else {res.end("Pull Accepted"); }
                                     var date = new Date ();
-                                    console.log ("\nPull Command, master:" + req.query.master + " @" + date.toString ());
+                                    console.log ("\nPull Command, master:" + _master + " @" + date.toString ());
                                     console.log ("	body:%j", req.body);
                                     if (pull_error){
                                         console.log ("	There were Errors:%j", pull_error);
