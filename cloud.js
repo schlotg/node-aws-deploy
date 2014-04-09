@@ -4,9 +4,6 @@ var _path = process.env["WORKING_DIR"];
 _path = (_path) ? _path + "/" : "";
 try {AWS && AWS.config.loadFromPath(_path + '.app-config.json');}
 catch (err){}
-console.log ("AWS CONFIG:");
-console.log (AWS.config);
-
 var EC2 = AWS && new AWS.EC2();
 
 /* IMPLEMENTS THE AWS VERSIONS OF:
@@ -62,7 +59,6 @@ function createCloudInterface() {
             var instances = [];
             if (EC2){
                 EC2.describeInstances(function(error, data) {
-console.log ("EC2.describeInstances- Error:%s Data:%j", error, data);
                     if (error) { cb && cb (error);}
                     else {
                         if (data.Reservations.length){
@@ -72,18 +68,18 @@ console.log ("EC2.describeInstances- Error:%s Data:%j", error, data);
                                 --count;
                                 if (count <= 0) { cb && cb (null, instances);}
                             }
-console.log ("data.Reservations.length- length:%j", data.Reservations.length);
-
                             data.Reservations.forEach (function (revervation){
                                 revervation.Instances.forEach (function (instance){
                                     EC2.describeInstanceAttribute ({Attribute: "userData", InstanceId:instance.InstanceId}, function (err, data){
-console.log ("EC2.describeInstanceAttribute - data:%j", data);
                                         if (!err && data.UserData && data.UserData.Value){
                                             var user_data = new Buffer(data.UserData.Value, 'base64').toString ();
+console.log ("user_data:%s", user_data);
                                             if (user_data) {
                                                 try{user_data = JSON.parse (user_data);}
                                                 catch (err){}
                                             }
+console.log ("user_dataj:%j", user_data);
+
                                             if (user_data.type && config.type && user_data.type === config.type){
                                                 instances.push ({id:instance.InstanceId, dns:instance.PublicDnsName,
                                                     user_data:user_data});
