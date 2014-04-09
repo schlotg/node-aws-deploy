@@ -156,3 +156,5 @@ Most Git repositories have a concept of a webhook. This is a mechanism that perf
 
 It is highly recommended that you use a secure post so your secret and information about your code base is not visible to others. The secret can be anything but must be configured on the server in the .app-config.json (you can use the install.js to set it) and it must match the one posted form your webhook. This prevents people from triggering pulls on your servers for fun.
 If a valid certificate is not configured with node-aws-deploy, a secure webhook cannot be used.
+
+For Github select JSON for the payload and the 'pullField' in .app-config.json should be set to 'ref'.
