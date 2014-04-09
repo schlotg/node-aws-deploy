@@ -106,6 +106,7 @@
 
     // pull the latest source
     function pull(cb, master, req){
+        master = (master === true || master === "true");
         pull_error = "";
         function _pull (cb){
             console.log ("\nPulling the latest code from remote repository");
