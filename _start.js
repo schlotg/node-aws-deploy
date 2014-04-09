@@ -70,11 +70,11 @@
 
 
     // post a command out
-    function post (url, body, port, secure, path, cb){
+    function post (_url, body, port, secure, path, cb){
         var qs = require('querystring');
         body = qs.stringify (body);
         var options = {
-            host: url,
+            host: _url,
             port: port,
             path: path,
             method: 'POST',
