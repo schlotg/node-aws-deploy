@@ -33,6 +33,7 @@
  "pullSecret": <secret phrase>
 
  "pullBranch": <git branch to use for the pull>
+ "pullField": <field that contains the branch information on a post by the web hook (defaults to 'ref')>
 
  // In theory you can put an cloud vendor specific params in here. You just have to have support in cloud.js for them.
  // Curently AWS is the only cloud platform supported
@@ -68,6 +69,7 @@
     var sudo;
     var instance_data;
     var secure_post;
+    var pull_field;
 
 
     // post a command out
@@ -341,6 +343,9 @@
         console.log ("	Continuing on with defaults");
         config = {};
     }
+
+    pull_field = config.pullField || "ref";
+
     // if nor configured this does nothing
     sudo = (config.sudo) ? "sudo " : "";
 
@@ -419,8 +424,8 @@
                     if (valid_request){
                         bodyParser (req, res, function (){
                             var listensTo = (instance_data && instance_data.listensTo) ? instance_data.listensTo : "";
-                            req.body.ref = req.body.ref || "";
-                            if (req.body.ref.search (listensTo) !== -1){
+                            req.body[pull_field] = req.body[pull_field] || "";
+                            if (req.body[pull_field].search (listensTo) !== -1){
                                 var _master = req.query.master;
                                 pull (function (){
                                     res.writeHead(200, {'Content-Type': 'text/plain'});
@@ -436,7 +441,7 @@
                             }
                             else{
                                 var msg = "\nIgnoring Pull Request, wrong branch. \n\tListening for: " + listensTo +
-                                    "\n\t Recieved:" + req.body.ref;
+                                    "\n\t Recieved:" + req.body[pull_field];
                                 console.log (msg);
                                 res.writeHead(404, {'Content-Type': 'text/plain'});
                                 res.end("Ignoring Pull Request, wrong branch.");

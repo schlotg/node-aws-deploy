@@ -162,11 +162,11 @@ async.waterfall ([
             console.log (++i + ") Enter the pull information, what triggers it how its configured, etc...");
             console.log ("\t pullPort: <set this to the port for a pull requests> - defaults to 8000");
             if (config.pullPort) {console.log ("\t\tCurrent Value = " + config.pullPort + " (Press <enter> to keep)");}
-            console.log ("\t pullKey: <path to a ssh key file for the HTTPS Server>");
+            console.log ("\t pullKey: <path to a ssh key file for the HTTPS Server. It must be the full path>");
             if (config.pullKey) {console.log ("\t\tCurrent Value = " + config.pullKey + " (Press <enter> to keep)");}
-            console.log ("\t pullCert: <path to a ssh cert file for the HTTPS Server>");
+            console.log ("\t pullCert: <path to a ssh cert file for the HTTPS Server. It must be the full path>");
             if (config.pullCert) {console.log ("\t\tCurrent Value = " + config.pullCert + " (Press <enter> to keep)");}
-            console.log ("\t pullCa: <array of paths to the certificate authority files> (optional)");
+            console.log ("\t pullCa: <array of paths to the certificate authority files. It must be the full path (['/home/ec2-user/...', ...])> (optional)");
             if (config.pullCa) {console.log ("\t\tCurrent Value = " + config.Ca + " (Press <enter> to keep)");}
             console.log ("\t pullPassphrase: <string - phrase that the certificate was generated with> (optional)");
             if (config.pullPassphrase) {console.log ("\t\tCurrent Value = " + config.pullPassphrase + " (Press <enter> to keep)");}
@@ -174,8 +174,11 @@ async.waterfall ([
             if (config.pullSecret) {console.log ("\t\tCurrent Value = " + config.pullSecret + " (Press <enter> to keep)");}
             console.log ("\t pullBranch: <the branch that this server should pull from on pull requests> (defaults to master))");
             if (config.pullBranch) {console.log ("\t\tCurrent Value = " + config.pullBranch + " (Press <enter> to keep)");}
+            console.log ("\t pullField: <the field that contains the branch info in the webhook post requests> (defaults to 'ref'))");
+            if (config.pullField) {console.log ("\t\tCurrent Value = " + config.pullField + " (Press <enter> to keep)");}
+            else {config.pullField = 'ref';}
             if (config.appEnvironmentVariables) {console.log ("Current Value = " + config.appEnvironmentVariables + " (Press <enter> to keep)");}
-            prompt.get (["pullPort", "pullKey", "pullCert", "pullCa", "pullPassphrase", "pullSecret", "pullBranch"], function (err, results){
+            prompt.get (["pullPort", "pullKey", "pullCert", "pullCa", "pullPassphrase", "pullSecret", "pullBranch", "pullField"], function (err, results){
                 for (var k in results){
                     config[k] = results[k] || config[k];
                 }
@@ -252,7 +255,7 @@ async.waterfall ([
 ], function (err){
     if (!err){
         updateConfig ();
-        console.log ("Success installed: " + config.applicationName + ". The Configuration has been written out to '.app-config.json' in ~/node-aws-deploy, " +
+        console.log ("Successfully installed: " + config.applicationName + ". The Configuration has been written out to '.app-config.json' in ~/node-aws-deploy, " +
             "The settings can always be changed by manually editing the '.app-config.json' file.");
         if (!local){
             console.log ("To Launch the application type 'sudo start " + (config.applicationName || "node-aws-deploy") + "'");
