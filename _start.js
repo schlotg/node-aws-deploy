@@ -137,11 +137,9 @@
                 cloud.getInstances (function (err, instances){
                     if (instances && instances.length){
                         console.log ("Found " + instances.length + " instances, re-posting.");
-console.log ("this instanceId: %j", cloud.getInstanceId ());
                         instances.forEach (function (instance){
-console.log ("instance: %j", instance);
                             if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
-console.log ("Posting to:" + instance.dns);
+console.log ("dns:%j, body:%j, port:%j, secure:%j, query:%j", instance.dns, req.body, config.pullPort, secure, url.format (req.query));
                                 post (instance.dns, req.body, config.pullPort, secure, url.format (req.query));
                             }
                         });
