@@ -173,5 +173,12 @@ node-aws-deploy puts the following into environment variables which you applicat
 node-aws-deploy when used locally on your development machine has the following functionality / benefits:
 
     1. It will not start a server to listen for webhooks or pull requests
-    2. When it starts, it will automatically check for NPM dependency changes and the correct node version. It will update these as needed before starting the application. This will allow developers to add npm modules our update the current node version and have it automatically distributed across the team.
+    2. When it starts, it will automatically check for NPM dependency changes and the correct node version. It will update
+        these as needed before starting the application. This will allow developers to add npm modules our update the
+        current node version and have it automatically distributed across the team the next each team member pulls.
     3. When used with nodemon it is a great combination for development.
+
+        nodemon _start.js
+
+To use node-aws-deploy for multiple projects on a single development machine, it works best to have a copy of node-aws-deploy inside each project with its own configuration specific to each project.
+
