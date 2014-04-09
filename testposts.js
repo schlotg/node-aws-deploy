@@ -1,4 +1,4 @@
-// Simple file to testing posting from webhooks
+// Simple file to simulate a webhook
 
 var https = require ("https");
 var http = require ("http");
@@ -22,8 +22,6 @@ function post (url, body, port, secure, path, cb){
     var server = (secure) ? https : http;
     var req = server.request(options, function(res) {
         var result = "";
-        //console.log('STATUS: ' + res.statusCode);
-        //console.log('HEADERS: ' + JSON.stringify(res.headers) + '\n');
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             result += chunk;
