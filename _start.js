@@ -57,7 +57,7 @@
     var cluster = require ('cluster');
     var config_file, config, error, pull_error = "";
     var package_json, package_copy, parsed_package, parsed_copy;
-    var restart = true;
+    var restart = false;
     var need_restart = false;
     var http = require('http');
     var https = require('https');
@@ -116,17 +116,21 @@
                     console.log ("	Error pulling reposititory. Error" + ster);
                     pull_error += "\nError pulling reposititory. Error" + ster;
                 }
-                else{console.log ("	" + std);}
+                else{
+                    console.log ("	" + std);
+                    if (std && std.search ("Already up-to-date") !== -1){
+                        need_restart = true;
+                    }
+                }
+
                 cb && cb ();
             });
         }
         // only pull the latest if in the cloud. For local development don't do anything. The developer must manually pull
         if (cloud.isCloud ()){
-            restart = (master === false);
-            need_restart = false;
             if (!master){
                 _pull (function (){
-                    if (need_restart){
+                    if (need_restart && restart){
                         process.exit(0);
                     }
                     cb && cb ();
@@ -141,14 +145,12 @@
                         console.log ("Found " + instances.length + " instances, re-posting.");
                         instances.forEach (function (instance){
                             if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
-console.log ("req:%j", req.query);
-console.log ("dns:%j, body:%j, port:%j, secure:%j, query:%j", instance.dns, req.body, config.pullPort, secure, url.format ({pathname:"/pull", query:req.query}));
                                 post (instance.dns, req.body, config.pullPort, secure, url.format ({pathname:"/pull", query:req.query}));
                             }
                         });
                         // now pull and restart ourselves
                         _pull (function (){
-                            if (need_restart){
+                            if (need_restart && restart){
                                 process.exit(0);
                             }
                             cb && cb ();
@@ -189,8 +191,7 @@ console.log ("dns:%j, body:%j, port:%j, secure:%j, query:%j", instance.dns, req.
                     }
                     else{
                         console.log ("		Node upgrade success, restarting");
-                        if (restart){ process.exit (0); }// exit so we get restarted
-                        else { need_restart = true;}
+                        process.exit (0); // exit so we get restarted
                     }
                     cb & cb ();
                 });
@@ -311,6 +312,7 @@ console.log ("dns:%j, body:%j, port:%j, secure:%j, query:%j", instance.dns, req.
             console.log ("********************************************************************************\n\n");
         }
         require (workingDirectory + '/' + appEntry);
+        restart = true;
     }
 
     /////////////////// CODE EXECUTION STARTS HERE ///////////////////////////
