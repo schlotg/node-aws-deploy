@@ -143,6 +143,7 @@ Once your application is setup and running correctly, you will want to create a 
 4. This new AMI should now be available and listed in the AMI section. Use it to launch new instances, create scale groups, etc...
 
 ###Triggering live updates
+====
 
 Most Git repositories have a concept of a webhook. This is a mechanism that performs a post or get on a push to your directory. node-aws-deploy only supports pushes at this time. The examples given below were written for gitHub's web hooks but should be applicable to other remote repositories.
 
@@ -158,3 +159,19 @@ It is highly recommended that you use a secure post so your secret and informati
 If a valid certificate is not configured with node-aws-deploy, a secure webhook cannot be used.
 
 For Github select JSON for the payload and the 'pullField' in .app-config.json should be set to 'ref'.
+
+###Misc
+
+node-aws-deploy puts the following into environment variables which you application is free to inspect and use:
+
+             process.env['CLOUD'] = <bool> is this running on an AWS server
+             process.env['INSTANCE_ID'] = <string> EC2 instance id of this server.
+             process.env['INSTANCE_DATA'] = <JSON> the user data associated with this ec2 instance
+
+###Running Locally
+
+node-aws-deploy when used locally on your development machine has the following functionality / benefits:
+
+    1. It will not start a server to listen for webhooks or pull requests
+    2. When it starts, it will automatically check for NPM dependency changes and the correct node version. It will update these as needed before starting the application. This will allow developers to add npm modules our update the current node version and have it automatically distributed across the team.
+    3. When used with nodemon it is a great combination for development.
