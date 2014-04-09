@@ -131,6 +131,15 @@ Once your application is setup and running correctly, you will want to create a 
 
 ###Triggering live updates
 
---- Coming Soon ----
+Most Git repositories have a concept of a webhook. This is a mechanism that performs a post or get on a push to your directory. node-aws-deploy only supports pushes at this time. The examples given below were written for gitHub's web hooks but should be applicable to other remote repositories.
 
+    For a unsecure post on port 8000 with a secret of 'no_limits' the web hook URL would look like (make sure master is always set to true):
 
+        http://mycoolwebapp.com:8000/post/pull?secret=no_limits&master=true
+
+    For a secure post on port 8000 with a secret of 'no_limits' the web hook URL would look like (make sure master is always set to true):
+
+        http://mycoolwebapp.com:8000/post/pull?secret=no_limits&master=true
+
+It is highly recommended that you use a secure post so your secret and information about your code base is not visible to others. The secret can be anything but must be configured on the server in the .app-config.json (you can use the install.js to set it) and it must match the one posted form your webhook. This prevents people from triggering pulls on your servers for fun.
+If a valid certificate is not configured with node-aws-deploy, a secure webhook cannot be used.
