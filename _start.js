@@ -134,6 +134,7 @@
             else { // else we are the master so find all the other AWS instances to pull from
                 // get other instances that our are same type and already running
                 var secure = (req.href.search ("https://") !== -1);
+                req.query.master = false;
                 cloud.getInstances (function (err, instances){
                     if (instances && instances.length){
                         console.log ("Found " + instances.length + " instances, re-posting.");
