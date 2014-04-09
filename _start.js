@@ -122,7 +122,7 @@
         }
         // only pull the latest if in the cloud. For local development don't do anything. The developer must manually pull
         if (cloud.isCloud ()){
-            restart = (master || master === false);
+            restart = (master === false);
             need_restart = false;
             if (!master){
                 _pull (function (){
