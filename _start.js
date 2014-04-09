@@ -91,12 +91,12 @@
             res.setEncoding('utf8');
             res.on('data', function (chunk) {result += chunk;});
             res.on('end', function (){
-                cb (null, result);
+                cb && cb (null, result);
             });
         });
         req.on('error', function(e) {
             console.log('problem with request: ' + e.message);
-            cb (e.message);
+            cb && cb (e.message);
         });
 
         // write data to request body
