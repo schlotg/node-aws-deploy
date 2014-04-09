@@ -2,6 +2,8 @@ var exec = require('child_process').exec;
 var AWS = require ('aws-sdk');
 //try {AWS && AWS.config.loadFromPath('./app-config.json');}
 try {AWS && AWS.config.loadFromPath('/home/ec2-user/node-aws-deploy/app-config.json');}
+console.log ("AWS CONFIG:");
+console.log (AWS.config);
 catch (err){}
 var EC2 = AWS && new AWS.EC2();
 
