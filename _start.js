@@ -318,7 +318,8 @@
         process.env["WORKING_DIR"] = process.cwd ();
     }
     var _path = process.env["WORKING_DIR"];
-    try {config_file = fs.readFileSync (_path + "/.app-config.json");}
+    _path = (_path) ? _path + "/" : "";
+    try {config_file = fs.readFileSync (_path + ".app-config.json");}
     catch (err){ error = err;}
 
     if (config_file){
