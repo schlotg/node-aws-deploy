@@ -406,9 +406,9 @@
                         req.on('end', function () {
 
 console.log (body);
-                            req.body = qs.unescape(body);
-                            try{req.body = JSON.parse (req.body);}
-                            catch (e){}
+                            //body = qs.unescape(body);
+                            try{req.body = JSON.parse (body);}
+                            catch (e){req.body = qs.parse (body);}
                             if (func){func (req, res);}
                         });
                     }
