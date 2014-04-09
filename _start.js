@@ -405,11 +405,14 @@
 console.log ("body_on_:" + body);
                         });
                         req.on('end', function () {
+console.log ('body is type:%s', typeof body);
                             req.body = qs.parse(body);
                             if (typeof req.body === "string"){
                                 try{req.body = JSON.parse (req.body);}
                                 catch (e){}
                             }
+console.log ('req.body is type:%s', typeof req.body);
+
                             if (func){func (req, res);}
 console.log ("body_on_end:" + body);
 console.log (req.body);
