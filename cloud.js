@@ -80,11 +80,11 @@ console.log ("user_data:%s", user_data);
                                             }
 console.log ("user_dataj:%j", user_data);
 
-                                            if (user_data.type && config.type && user_data.type === config.type){
+                                            if (user_data.type && instance_user_data.type && user_data.type === instance_user_data.type){
                                                 instances.push ({id:instance.InstanceId, dns:instance.PublicDnsName,
                                                     user_data:user_data});
                                             }
-                                            else if (config.type && !user_data.type && config.type === user_data){
+                                            else if (instance_user_data.type && !user_data.type && instance_user_data.type === user_data){
                                                 instances.push ({id:instance.InstanceId, dns:instance.PublicDnsName,
                                                     user_data:user_data});
                                             }
