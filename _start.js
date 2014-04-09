@@ -181,8 +181,8 @@
         parsed_package = (package_json) ? JSON.parse (package_json) : null;
         parsed_copy = (package_copy) ? JSON.parse (package_copy) : null;
         // see if our node versions match
-        if (parsed_package && parsed_package.node_version){
-            var version = parsed_package.node_version.replace ('v', "");
+        if (parsed_package && parsed_package.nodeVersion){
+            var version = parsed_package.nodeVersion.replace ('v', "");
             var node_version = process.version.replace ('v', "");
             if (version !== node_version){
                 console.log ("	Upgrading Node");
@@ -208,7 +208,6 @@
             }
         }
         else{
-            console.log ("	Current Node version is:" + node_version);
             cb & cb ();
         }
     }
