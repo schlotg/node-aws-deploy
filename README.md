@@ -4,16 +4,17 @@ This is my attempt at an easy to use and robust deployment and install system to
 node-aws-deploy sits outside your application so it doesn't clutter up your code base. It relies heavily on the package.json file so your application must have one to work properly.
 
 ##How it works
-node-aws-deploy has some install scripts that install 'Node', 'n', and 'node-aws-deploy'. node-aws-deploy uses upstart to launch node-aws-deploy on server startup and relaunch if your application dies.
-On startup node-aws-deploy does a git pull off of the configured git branch of your remote git repository. It then checks the the node version specified in package.json. This is specified in the 'nodeVersion' field which is ignored by NPM. If node version specified in package.json does not match the current node version, node-aws-deploy uses 'n' to switch versions to the one specified. If changed to a different version the system is restarted.
-Next, node-aws-deploy compares the contents of package.json to a local copy. If anything has changed then those packages are removed and re-installed using NPM.
-Finally node-aws-deploy changes the working directory to your applications folder and loads and executes the configured .js file that is your applications starting point.
+node-aws-deploy has install scripts that install 'Node', 'n', and 'node-aws-deploy'. node-aws-deploy uses upstart to launch node-aws-deploy on server startup, and relaunch if your application dies.
+On startup, node-aws-deploy does a git pull of the configured git branch of your remote git repository. It then checks the the node version specified in package.json. This is specified in the 'nodeVersion' field which is ignored by NPM. If the node version specified in package.json does not match the current node version, node-aws-deploy uses 'n' to switch versions to the one specified. If Nodejs is changed to a different version, the system is restarted.
+Next, node-aws-deploy compares the contents of package.json to a local copy. If anything has changed, those packages are removed and re-installed using NPM.
+Finally, node-aws-deploy changes the working directory to your applications folder, then loads and executes the configured .js file that is your applications starting point.
 
-To handle live updates, node-aws-deploy implements a server that listens on a configured port. A webhook can then be configured that posts to the node-aws-deploy listener on Git pushes into your repository. A very likely configuration is for several servers to be behind a load balancer. The webhook will be dispatched by the locad balancer to one of the running servers. The server will then find all of the other servers of that same type and forward the webhook along to them. Every server will than do a git pull and then update itself.
-This allows a developer to setup a branch that the servers will operate off of. Whenever a deployment needs to happen, the developer simply merges into that branch and pushes. Deployment then happens automatically.
+To handle live updates, node-aws-deploy implements a server that listens on a configured port. A webhook can be configured that posts to the node-aws-deploy listener on Git pushes into your repository. Typically, several servers are configured behind a load balancer. The webhook will be dispatched by the load balancer to one of the running servers. The server will find all of the other servers of that same type and forward the webhook along. Every server will do a git pull and then update itself.
+This allows a git branch to be setup that the servers will operate off of. Whenever a deployment needs to happen, a developer simply merges into that branch and pushes. Deployment happens automatically.
 
-This is a great way to handle test builds but may not be the best way to handle production builds. The main reason is that node-aws-deploy relies on your git respository, and the NPM repository being up and running. A much safer solution for production is to take a working and tested build, create and AMI out of it, set the the user data to {deploy:false} and then update your production scale group with this new AMI.
+This is a great way to handle test builds/deployments but may not be the best way to handle production builds. node-aws-deploy relies on your git respository, and the NPM repository being up and running and this introduces more points of failure. A much safer solution for production is to take a working and tested build, create and AMI out of it, set the the user data to {deploy:false} and then update your production scale group with this new AMI.
 
+<Code to build out and AMI from an existing node-aws-deploy build and deploy to a scale group coming soon!>
 
 ###Setting up the AWS Node Server Manually
 ====
@@ -155,7 +156,7 @@ Most Git repositories have a concept of a webhook. This is a mechanism that perf
 
         http://mycoolwebapp.com:8000/post/pull?secret=no_limits&master=true
 
-It is highly recommended that you use a secure post so your secret and information about your code base is not visible to others. The secret can be anything but must be configured on the server in the .app-config.json (you can use the install.js to set it) and it must match the one posted form your webhook. This prevents people from triggering pulls on your servers for fun.
+It is highly recommended that you use a secure post so your secret and information about your code base is not visible to others. The secret can be anything but must be configured on the server in the .app-config.json (you can use the install.js to set it) and it must match the one posted form your webhook. This prevents people from triggering pulls on your server(s) for fun.
 If a valid certificate is not configured with node-aws-deploy, a secure webhook cannot be used.
 
 For Github select JSON for the payload and the 'pullField' in .app-config.json should be set to 'ref'.
@@ -186,7 +187,7 @@ To use node-aws-deploy for multiple projects on a single development machine, it
 
 ###Using a pre-launch File
 
-You can specify a pre-launch file that gets executed prior to the application launching. This allows you to start services, create files, etc... To make this work the file must be a node java script files that works with require. It must exports a 'start' function. The start function takes a callback that will be called when the pre-launch is done executing. Calling the callback will signal node-aws-deploy to continue execution by executing the file that is the entry point for your application.
+You can specify a pre-launch file that gets executed prior to the application launching. This allows you to start services, create files, etc... The file must be a node Javascript file that works with require. It must export a 'start' function. The start function takes a callback that will be called when the pre-launch is done executing. Calling the callback will signal node-aws-deploy to continue execution by executing the file that is the entry point for your application.
 Specify the pre-launch file by setting it manually in .app-config.json or using install.js. The file name must be relative to the application path.
 
 In its simplest form the pre-launch file would look like something like this:
