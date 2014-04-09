@@ -140,8 +140,8 @@
                         instances.forEach (function (instance){
                             if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
 console.log ("req:%j", req.query);
-console.log ("dns:%j, body:%j, port:%j, secure:%j, query:%j", instance.dns, req.body, config.pullPort, secure, url.format ({query:req.query}));
-                                post (instance.dns, req.body, config.pullPort, secure, url.format ({query:req.query}));
+console.log ("dns:%j, body:%j, port:%j, secure:%j, query:%j", instance.dns, req.body, config.pullPort, secure, url.format ({pathname:"pull", query:req.query}));
+                                post (instance.dns, req.body, config.pullPort, secure, url.format ({pathname:"pull", query:req.query}));
                             }
                         });
                         // now pull and restart ourselves
