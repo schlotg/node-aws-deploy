@@ -139,7 +139,7 @@
                         console.log ("Found " + instances.length + " instances, re-posting.");
                         instances.forEach (function (instance){
                             if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
-                                post (instance.dns, req,body, config.pullPort, secure, url.format (req.query));
+                                post (instance.dns, req.body, config.pullPort, secure, url.format (req.query));
                             }
                         });
                         // now pull and restart ourselves
@@ -317,7 +317,7 @@
         console.log ("working directory:" + process.cwd ());
         process.env["WORKING_DIR"] = process.cwd ();
     }
-    var _path = process.env["WORKING_DIR"];
+    var _path = process.env["WORKING_DIR"];// support cluster
     _path = (_path) ? _path + "/" : "";
     try {config_file = fs.readFileSync (_path + ".app-config.json");}
     catch (err){ error = err;}

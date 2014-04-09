@@ -1,6 +1,6 @@
 var exec = require('child_process').exec;
 var AWS = require ('aws-sdk');
-var _path = process.env["WORKING_DIR"];
+var _path = process.env["WORKING_DIR"]; // support cluster
 _path = (_path) ? _path + "/" : "";
 try {AWS && AWS.config.loadFromPath(_path + '.app-config.json');}
 catch (err){}
@@ -73,13 +73,10 @@ function createCloudInterface() {
                                     EC2.describeInstanceAttribute ({Attribute: "userData", InstanceId:instance.InstanceId}, function (err, data){
                                         if (!err && data.UserData && data.UserData.Value){
                                             var user_data = new Buffer(data.UserData.Value, 'base64').toString ();
-console.log ("user_data:%s", user_data);
                                             if (user_data) {
                                                 try{user_data = JSON.parse (user_data);}
                                                 catch (err){}
                                             }
-console.log ("user_dataj:%j", user_data);
-
                                             if (user_data.type && instance_user_data.type && user_data.type === instance_user_data.type){
                                                 instances.push ({id:instance.InstanceId, dns:instance.PublicDnsName,
                                                     user_data:user_data});
