@@ -5,7 +5,15 @@ node-aws-deploy sits outside your application so it doesn't clutter up your code
 
 ##How it works
 node-aws-deploy has some install scripts that install 'Node', 'n', and 'node-aws-deploy'. node-aws-deploy uses upstart to launch node-aws-deploy on server startup and relaunch if your application dies.
-On startup node-aws-deploy does a git pull off of the configured git branch of your remote git repository. It then checks the the node version specified in package.json. This is specified in the 'nodeVersion' field which is ignored by NPM.
+On startup node-aws-deploy does a git pull off of the configured git branch of your remote git repository. It then checks the the node version specified in package.json. This is specified in the 'nodeVersion' field which is ignored by NPM. If node version specified in package.json does not match the current node version, node-aws-deploy uses 'n' to switch versions to the one specified. If changed to a different version the system is restarted.
+Next, node-aws-deploy compares the contents of package.json to a local copy. If anything has changed then those packages are removed and re-installed using NPM.
+Finally node-aws-deploy changes the working directory to your applications folder and loads and executes the configured .js file that is your applications starting point.
+
+To handle live updates, node-aws-deploy implements a server that listens on a configured port. A webhook can then be configured that posts to the node-aws-deploy listener on Git pushes into your repository. A very likely configuration is for several servers to be behind a load balancer. The webhook will be dispatched by the locad balancer to one of the running servers. The server will then find all of the other servers of that same type and forward the webhook along to them. Every server will than do a git pull and then update itself.
+This allows a developer to setup a branch that the servers will operate off of. Whenever a deployment needs to happen, the developer simply merges into that branch and pushes. Deployment then happens automatically.
+
+This is a great way to handle test builds but may not be the best way to handle production builds. The main reason is that node-aws-deploy relies on your git respository, and the NPM repository being up and running. A much safer solution for production is to take a working and tested build, create and AMI out of it, set the the user data to {deploy:false} and then update your production scale group with this new AMI.
+
 
 ###Setting up the AWS Node Server Manually
 ====
