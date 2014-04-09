@@ -139,6 +139,7 @@
                         console.log ("Found " + instances.length + " instances, re-posting.");
                         instances.forEach (function (instance){
                             if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
+console.log ("req:%j", req.query);
 console.log ("dns:%j, body:%j, port:%j, secure:%j, query:%j", instance.dns, req.body, config.pullPort, secure, url.format (req.query));
                                 post (instance.dns, req.body, config.pullPort, secure, url.format (req.query));
                             }
@@ -382,7 +383,7 @@ console.log ("dns:%j, body:%j, port:%j, secure:%j, query:%j", instance.dns, req.
             // create a server to listen for pull requests
             function handleRequests (req, res){
                 function parseURL (req){
-                    var url_in = url.parse(req.url,true);
+                    var url_in = url.parse (req.url, true);
                     req.query = url_in.query;
                     req.href = url_in.href;
                 }
