@@ -119,6 +119,9 @@
                 else{
                     console.log ("	" + std);
                     if (std && std.search ("Already up-to-date") !== -1){
+                        need_restart = false;
+                    }
+                    else{
                         need_restart = true;
                     }
                 }
