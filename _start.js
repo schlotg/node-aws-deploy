@@ -402,21 +402,12 @@
                             if (body.length > 524488) { // limit the most data someone can send to 1/2 a meg
                                 request.connection.destroy();
                             }
-console.log ("\nbody_on_:" + body);
                         });
                         req.on('end', function () {
-console.log ('\nbody is type:%s', typeof body);
-                            //req.body = qs.parse(body);
-                            req.body = body;
-                            if (typeof req.body === "string"){
-                                try{req.body = JSON.parse (req.body);}
-                                catch (e){}
-                            }
-console.log ('\nreq.body is type:%s', typeof req.body);
-
+                            req.body = qs.unescape(body);
+                            try{req.body = JSON.parse (req.body);}
+                            catch (e){}
                             if (func){func (req, res);}
-console.log ("\nbody_on_end:" + body);
-console.log (req.body);
                         });
                     }
                 }
