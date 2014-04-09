@@ -1,7 +1,7 @@
 var exec = require('child_process').exec;
 var AWS = require ('aws-sdk');
 var _path = process.env["WORKING_DIR"];
-try {AWS && AWS.config.loadFromPath(_path + '.app-config.json');}
+try {AWS && AWS.config.loadFromPath(_path + '/.app-config.json');}
 catch (err){}
 console.log ("AWS CONFIG:");
 console.log (AWS.config);
