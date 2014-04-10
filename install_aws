@@ -1,11 +1,13 @@
 #######################################################################################
 # Before you run this do the following:
-#	sudo su
-#	vi /etc/sudoers
-#   	<scroll down and find the secure_path line>
-#   	<hit <i> and insert the following ':/usr/local/bin' at the end of the path>
-#   	<hit <esc> and type ':wq!'
-#	exit
+#   sudo su
+#   vi /etc/sudoers
+#       <scroll down and find the line that contains 'secure_path = /sbin:/bin:/usr/sbin:/usr/bin'>
+#       <hit <i> and insert the following ':/usr/local/bin' at the end of the path>
+#       <scroll up and find the line 'Defaults  requiretty'>
+#       <insert a '#' in front of the Defaults to comment out the line >
+#       <hit <esc> and type ':wq!'
+#   exit
 # This allows 'n' and 'node' to run as sudo
 ######################################################################################
 
