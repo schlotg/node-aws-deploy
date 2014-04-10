@@ -370,7 +370,7 @@
             var workingDirectory = config.applicationDirectory || process.cwd();
             console.log ("\nWorking Directory is:" + process.cwd());
             process.chdir (workingDirectory);
-            console.log ("\nSetting Working Directory to:" + process.cwd());
+            console.log ("Setting Working Directory to:" + process.cwd());
 
             // determine if we are in the could or not and set an environment variable
             // in case other code needs to know this
@@ -483,8 +483,8 @@
                     catch (err) {cert = null;}
                     if (key && cert) {
                         options = {key:key, cert:cert,
-                        ciphers: 'ECDHE-RSA-AES128-SHA256:AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH',
-                        honorCipherOrder: true
+                            ciphers: 'ECDHE-RSA-AES128-SHA256:AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH',
+                            honorCipherOrder: true
                         };
                     }
                     if (options && config.pullPassphrase){
@@ -516,10 +516,11 @@
             }
             else {
                 console.log ("NO PULL SERVER STARTED!!!");
+                startApp ();
             }
         });
     }
     else{
         startApp ();
     }
- })();
+})();

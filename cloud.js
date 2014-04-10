@@ -1,18 +1,14 @@
 var exec = require('child_process').exec;
 var AWS = require ('aws-sdk');
-var _path = process.env["WORKING_DIR"]; // support cluster
-_path = (_path) ? _path + "/" : "";
-try {AWS && AWS.config.loadFromPath(_path + '.app-config.json');}
-catch (err){}
-var EC2 = AWS && new AWS.EC2();
+var EC2;
 
 /* IMPLEMENTS THE AWS VERSIONS OF:
-    getInstanceId ()
-    getInstanceData ()
-    isCloud ()
+ getInstanceId ()
+ getInstanceData ()
+ isCloud ()
 
-    WARNING CALL INIT FIRST OR THEO OTHER FUNCTIONS WILL ALL RETURN NULL
-*/
+ WARNING CALL INIT FIRST OR THEO OTHER FUNCTIONS WILL ALL RETURN NULL
+ */
 
 function createCloudInterface() {
 
@@ -24,6 +20,16 @@ function createCloudInterface() {
         // this must be called first to init everything
         init: function (_config, cb){
             config = _config;
+            var _path = process.env["WORKING_DIR"]; // support cluster
+            _path = (_path) ? _path + "/" : "";
+
+            if (config && config.accessKeyId && config.secretAccessKey && config.region){
+                var error;
+                try {AWS && AWS.config.loadFromPath(_path + '.app-config.json');}
+                catch (err){error = err;}
+                finally { if (!error) {EC2 = AWS && new AWS.EC2();} }
+            }
+
             var child = exec ('wget -q -O - http://169.254.169.254/latest/meta-data/instance-id', function (err, std, ster){
                 // get our instance id
                 if(!err){instance_id= std;}
