@@ -101,7 +101,7 @@ Generate a ssh key (use your email address):
     sudo ssh-keygen -t rsa -C "your_email@mail.com"
     press <enter> for the rest of the questions
 
-Ensure you have the latest node-aws-deploy and Amazon updates:
+Ensure you have the latest node-aws-deploy and AWS updates:
 
         sudo yum update
         cd ~/node-aws-deploy
