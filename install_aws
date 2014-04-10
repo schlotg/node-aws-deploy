@@ -38,7 +38,8 @@ description \"Node Deploy\"
 author \"none-aws-deploy\"
 env APP_PATH="PLACE_HOLDER"
 env ENTRY=\"/home/ec2-user/node-aws-deploy\"
-start on started mountall
+#start on started mountall
+start on runlevel [2345]
 stop on shutdown
 respawn
 #respawn limit 99 5

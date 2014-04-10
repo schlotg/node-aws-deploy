@@ -38,9 +38,10 @@ function post (url, body, port, secure, path, cb){
     // write data to request body
     req.write(body);
     req.end();
+    console.log ("posted to " + url + " waiting for response....");
 }
 
-var url = "ec2-54-82-234-63.compute-1.amazonaws.com";
+var url = "ec2-54-82-144-76.compute-1.amazonaws.com";
 var body = {ref:"develop"};
 var port = 8000;
 var secure = true;
