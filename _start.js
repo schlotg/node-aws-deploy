@@ -120,8 +120,8 @@
             // get the latest code
             var child = exec (sudo + "git pull", function (err, std, ster){
                 if (err){
-                    console.log ("	Error pulling reposititory. Error" + ster);
-                    pull_error += "\nError pulling reposititory. Error" + ster;
+                    console.log ("	Error pulling repository. Error" + ster);
+                    pull_error += "\nError pulling repository. Error" + ster;
                 }
                 else{
                     console.log ("	" + std);
@@ -259,11 +259,11 @@
                 }
                 var child = exec (sudo + "npm install -d", function (err, std, ster){
                     if (err){
-                        console.log ("	Error installing Node` modules. Error:" + ster);
-                        pull_error += "\nError installing Node` modules. Error:" + ster;
+                        console.log ("	Error installing Node modules. Error:" + ster);
+                        pull_error += "\nError installing Node modules. Error:" + ster;
                     }
                     else{
-                        console.log ("	Sucessfully update Node Modules: " + std);
+                        console.log ("	Successfully updated Node Modules: " + std);
                         fs.writeFileSync ("package.copy", package_json);
                     }
                     cb && cb ();
