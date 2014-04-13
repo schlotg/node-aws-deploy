@@ -120,6 +120,6 @@ function createCloudInterface() {
 };
 
 var cloud = createCloudInterface ();
-for (func in cloud){
+for (var func in cloud){
     exports[func] = cloud[func];
 }
