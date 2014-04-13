@@ -8,7 +8,6 @@ var async = require ("async");
 
 // Pass in the instance data that you want to post to, should be in the form of a json string
 var instance_data = process.argv[2];
-instance_data = '{"type":"production", "listensTo": "master", "deploy":true}';
 try {instance_data = JSON.parse (instance_data);}
 catch (err){}
 
