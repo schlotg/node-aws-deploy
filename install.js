@@ -78,6 +78,18 @@ async.waterfall ([
     },
 
     function (done){
+        console.log (++i + ") Enter your application's url (internet address not localhost)");
+        if (config.appURL) {console.log ("Current Value = " + config.appURL + " (Press <enter> to keep)");}
+        prompt.get (['url'], function (err, results){
+            if (results['url']){
+                config.appURL = results['url'];
+                updateConfig ();
+            }
+            done ();
+        });
+    },
+
+    function (done){
         console.log (++i + ") Enter any command line arguments you would like passed in (Entered as you would on the command line)");
         if (config.commandArguments) {console.log ("Current Value = " + config.commandArguments + " (Press <enter> to keep)");}
         prompt.get (['arguments'], function (err, results){
@@ -205,8 +217,36 @@ async.waterfall ([
             done ();
         }
     },
+
+    function (done){
+        if (local){
+            console.log (++i + ") Enter the pull information... (used to manually send a webhook)");
+            console.log ("\t pullPort: <set this to the port for a pull requests> - defaults to 8000");
+            if (config.pullPort) {console.log ("\t\tCurrent Value = " + config.pullPort + " (Press <enter> to keep)");}
+            console.log ("\t pullSecret: <secret phrase that this server uses to identify as a valid pull request> (optional))");
+            if (config.pullSecret) {console.log ("\t\tCurrent Value = " + config.pullSecret + " (Press <enter> to keep)");}
+            console.log ("\t pullBranch: <the branch that this server should pull from on pull requests> (defaults to master))");
+            if (config.pullBranch) {console.log ("\t\tCurrent Value = " + config.pullBranch + " (Press <enter> to keep)");}
+            console.log ("\t pullField: <the field that contains the branch info in the webhook post requests> (defaults to 'ref'))");
+            if (config.pullField) {console.log ("\t\tCurrent Value = " + config.pullField + " (Press <enter> to keep)");}
+            else {config.pullField = 'ref';}
+            if (config.appEnvironmentVariables) {console.log ("Current Value = " + config.appEnvironmentVariables + " (Press <enter> to keep)");}
+            prompt.get (["pullPort", "pullSecret", "pullBranch", "pullField"], function (err, results){
+                for (var k in results){
+                    config[k] = results[k] || config[k];
+                }
+                updateConfig ();
+                done ();
+            });
+
+        }
+        else{
+            done ();
+        }
+    },
+
     function (done) {
-        if (!local){
+        if (true){
             console.log (++i + ") Enter AWS SDK Information so that this server can talk to others on a pull request");
             console.log ("\t accessKeyId: <AWS API Access key 'XXXXXXXXXXXXXXXXXXXX'>");
             if (config.accessKeyId) {console.log ("\t\tCurrent Value = " + config.accessKeyId + " (Press <enter> to keep)");}

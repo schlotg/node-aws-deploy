@@ -16,6 +16,8 @@
  "appEntry": <set this to the name of the 'js' file that is your entry point>
  "commandArguments": <command line arguments you would like pass to the application>
  "appEnvironmentVariables": <{<key>:<pair>}, key pair environment variables that need to be se for the application >
+ "appURL": <https://myapp> used for manual webhooks
+
 
  "pullPort": <set this to the port for a pull requests> - defaults to 8000
 
