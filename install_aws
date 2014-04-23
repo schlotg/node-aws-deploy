@@ -12,7 +12,7 @@
 ######################################################################################
 
 # update the base system
-sudo yum update
+sudo yum -y update
 
 # install everything needed to get and compile n
 sudo yum install gcc-c++ make
