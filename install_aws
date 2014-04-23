@@ -47,6 +47,7 @@ respawn
 #respawn limit 99 5
 script
         cd \$ENTRY
+        sleep 10
         exec sudo node \$ENTRY/_start.js >> \$APP_PATH/logs/log 2>&1
 end script
 

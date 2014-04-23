@@ -16,6 +16,8 @@
  "appEntry": <set this to the name of the 'js' file that is your entry point>
  "commandArguments": <command line arguments you would like pass to the application>
  "appEnvironmentVariables": <{<key>:<pair>}, key pair environment variables that need to be se for the application >
+ "appURL": <https://myapp> used for manual webhooks
+
 
  "pullPort": <set this to the port for a pull requests> - defaults to 8000
 
@@ -278,50 +280,64 @@
     // start the application
     function startApp (){
 
-        // set command line args
-        if (config.commandArguments){
-            var args = config.commandArguments.split (" ");
-            if (cluster.isMaster){ // only output this info once
-                console.log ("Set the following Command Line Arguments:\n\t" + config.commandArguments);
-            }
-            args && args.forEach (function (arg){
-                process.argv.push (arg);
+        var workingDirectory = config.applicationDirectory || process.cwd();
+        if (cluster.isMaster && config.preLaunch){
+            console.log ("Processing preLaunch File: " + config.preLaunch);
+            var pre_launch = require (workingDirectory + '/' + config.preLaunch);
+            pre_launch.start (function (){
+                _start ();
             });
         }
-        else if (cluster.isMaster) {
-            console.log ("No Command Line Arguments set!");
+        else{ // no prelaunch file or not master
+            _start ();
         }
-        // set environment variables
-        if (config.appEnvironmentVariables){
-            var env_vars;
-            try {env_vars = JSON.parse (config.appEnvironmentVariables);}
-            catch (err) {console.log ("Error parsing the environment variables JSON:" + err);}
-            if (env_vars){
+
+        function _start (){
+
+            // set command line args
+            if (config.commandArguments){
+                var args = config.commandArguments.split (" ");
                 if (cluster.isMaster){ // only output this info once
-                    console.log ("Set the following Environment Variables:");
-                    console.log (env_vars);
+                    console.log ("Set the following Command Line Arguments:\n\t" + config.commandArguments);
                 }
-                for (var k in env_vars){
-                    process.env[k] = env_vars[k];
+                args && args.forEach (function (arg){
+                    process.argv.push (arg);
+                });
+            }
+            else if (cluster.isMaster) {
+                console.log ("No Command Line Arguments set!");
+            }
+            // set environment variables
+            if (config.appEnvironmentVariables){
+                var env_vars;
+                try {env_vars = JSON.parse (config.appEnvironmentVariables);}
+                catch (err) {console.log ("Error parsing the environment variables JSON:" + err);}
+                if (env_vars){
+                    if (cluster.isMaster){ // only output this info once
+                        console.log ("Set the following Environment Variables:");
+                        console.log (env_vars);
+                    }
+                    for (var k in env_vars){
+                        process.env[k] = env_vars[k];
+                    }
                 }
             }
+            else if (cluster.isMaster){
+                console.log ("No Environment Variables set!");
+            }
+            // enter the application
+            var appEntry = config.appEntry || "start.js", date;
+            if (cluster.isMaster){
+                date = new Date ();
+                console.log ("\n\n********************************************************************************");
+                console.log ("\tSTARTING APPLICATION %s", config.applicationName);
+                console.log ("\tCALLING: %s", appEntry);
+                console.log ("\t\tDate:" + date.toUTCString ());
+                console.log ("********************************************************************************\n\n");
+            }
+            require (workingDirectory + '/' + appEntry);
+            restart = true;
         }
-        else if (cluster.isMaster){
-            console.log ("No Environment Variables set!");
-        }
-        // enter the application
-        var workingDirectory = config.applicationDirectory || process.cwd();
-        var appEntry = config.appEntry || "start.js", date;
-        if (cluster.isMaster){
-            date = new Date ();
-            console.log ("\n\n********************************************************************************");
-            console.log ("\tSTARTING APPLICATION %s", config.applicationName);
-            console.log ("\tCALLING: %s", appEntry);
-            console.log ("\t\tDate:" + date.toUTCString ());
-            console.log ("********************************************************************************\n\n");
-        }
-        require (workingDirectory + '/' + appEntry);
-        restart = true;
     }
 
     /////////////////// CODE EXECUTION STARTS HERE ///////////////////////////
@@ -387,16 +403,7 @@
                         // check for dependency changes
                         checkNodeDependencies (function (){
                             checkNPMDependencies (function (){
-                                var workingDirectory = config.applicationDirectory || process.cwd();
-                                if (cluster.isMaster && config.prelaunch){
-                                    var pre_launch = require (workingDirectory + '/' + config.preLaunch);
-                                    pre_launch.start (function (){
-                                        startApp ();
-                                    });
-                                }
-                                else{ // no prelaunch file
-                                    startApp ();
-                                }
+                                startApp ();
                             });
                         });
                     }, master);

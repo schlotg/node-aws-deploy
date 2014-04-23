@@ -20,12 +20,21 @@ function createCloudInterface() {
         // this must be called first to init everything
         init: function (_config, cb){
             config = _config;
-            var _path = process.env["WORKING_DIR"]; // support cluster
-            _path = (_path) ? _path + "/" : "";
+            var _path, config_path;
+            if (process.env["WORKING_DIR"]){
+                _path = process.env["WORKING_DIR"]; // support cluster
+                _path = (_path) ? _path + "/" : "";
+                config_path = _path + '.app-config.json';
+            }
+            else {
+                _path =  (require.resolve ("./cloud.js")).replace ("cloud.js", "");
+                config_path = _path + '.app-config.json';
+            }
+            console.log (_path);
 
             if (config && config.accessKeyId && config.secretAccessKey && config.region){
                 var error;
-                try {AWS && AWS.config.loadFromPath(_path + '.app-config.json');}
+                try {AWS && AWS.config.loadFromPath(config_path);}
                 catch (err){error = err;}
                 finally { if (!error) {EC2 = AWS && new AWS.EC2();} }
             }
@@ -52,7 +61,11 @@ function createCloudInterface() {
         getInstanceId: function() {
             return instance_id;
         },
-        // get the instance data fro this instance
+        // get the instance data for this instance
+        setInstanceData: function(data) {
+            instance_user_data = data;
+        },
+        // get the instance data for this instance
         getInstanceData: function() {
             return instance_user_data;
         },
@@ -107,6 +120,6 @@ function createCloudInterface() {
 };
 
 var cloud = createCloudInterface ();
-for (func in cloud){
+for (var func in cloud){
     exports[func] = cloud[func];
 }

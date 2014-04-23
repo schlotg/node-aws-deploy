@@ -147,6 +147,7 @@ Once your application is setup and running correctly, you will want to create a 
 
 ###Triggering live updates
 
+####WebHooks
 Most Git repositories have a concept of a webhook. This is a mechanism that performs a post or get on a push to your directory. node-aws-deploy only supports pushes at this time. The examples given below were written for gitHub's web hooks but should be applicable to other remote repositories.
 
     For a unsecure post on port 8000 with a secret of 'no_limits' the web hook URL would look like (make sure master is always set to true):
@@ -161,6 +162,22 @@ It is highly recommended that you use a secure post so your secret and informati
 If a valid certificate is not configured with node-aws-deploy, a secure webhook cannot be used.
 
 For Github select JSON for the payload and the 'pullField' in .app-config.json should be set to 'ref'.
+
+Make sure that the port being used for the webhook has a path through the load balancer to your servers.
+
+####Manually triggering a webhook
+You can trigger a web hook manually if you want to test or if you prefer manual triggering. To do so make sure you have run the install.js program locally. Then run the manualWebHook.js you can trigger it for different branches by passing in the branch like so:
+
+    cd node-aws-deploy
+    node manualWebHook.js master
+
+####Running deployments locally
+Another option if you don't want to muck around with your load balancer is to run the deployment locally using 'postPullToAllInstances.js' This will communicate directly with the ec2 instances and trigger the deployment. It also has the advantage of returning a status. Make sure you have run install.js so you have a properly configured .app-config.json file and that the pull port on your instance security group is open.
+
+'postPullToAllInstances.js' needs a instance data JSON string passed in so it knows what types of servers to look for and what repository they are listening for. Here is an example:
+
+    cd node-aws-deploy
+    node postPullToAllInstances.js '{"type":"production", "listensTo": "master", "deploy":true}'
 
 
 ###Misc
