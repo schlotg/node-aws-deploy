@@ -364,7 +364,7 @@ console.log (config.appEnvironmentVariables);
     catch (err){ error = err;}
 
     if (config_file){
-        try {config = JSON.parse (conditionString(config_file));}
+        try {config = JSON.parse (conditionString(config_file.toString ()));}
         catch (err){ error = err;}
     }
 
