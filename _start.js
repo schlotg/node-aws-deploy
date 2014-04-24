@@ -303,7 +303,6 @@
         // set environment variables
         if (config.appEnvironmentVariables){
             var env_vars;
-console.log (config.appEnvironmentVariables);
             try {env_vars = JSON.parse (conditionString(config.appEnvironmentVariables));}
             catch (err) {console.log ("Error parsing the environment variables JSON:" + err);}
             if (env_vars){
