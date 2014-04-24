@@ -393,7 +393,7 @@
             console.log ("\nServer in cloud: " + cloud.isCloud ());
             process.env['CLOUD'] = cloud.isCloud ();
             process.env['INSTANCE_ID'] = cloud.getInstanceId ();
-            process.env['INSTANCE_DATA'] = cloud.getInstanceData ();
+            process.env['INSTANCE_DATA'] = JSON.stringify (cloud.getInstanceData ());
 
 
             function checkAndUpdateEnvironment (master){
