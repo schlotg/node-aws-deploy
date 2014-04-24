@@ -7,10 +7,17 @@ var i = 0;
 var prompt = require ("prompt");
 var config = {}, config_file, local;
 
+// renove non-standard quotation marks and replace them with the standard ones
+function conditionString (str){
+    var open = String.fromCharCode(147);
+    var close = String.fromCharCode(148);
+    return str && str.replace(open,'"').replace(close,'"');
+}
+
 function updateConfig (){
     if (config){
         var data = JSON.stringify (config, null, 4);
-        fs.writeFileSync (".app-config.json", data);
+        fs.writeFileSync (".app-config.json", conditionString (data));
     }
 }
 

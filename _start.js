@@ -77,6 +77,13 @@
     var secure_post;
     var pull_field;
 
+    // renove non-standard quotation marks and replace them with the standard ones
+    function conditionString (str){
+        var open = String.fromCharCode(147);
+        var close = String.fromCharCode(148);
+        return str && str.replace(open,'"').replace(close,'"');
+    }
+
 
     // post a command out
     function post (_url, body, port, secure, path, cb){
@@ -297,7 +304,7 @@
         if (config.appEnvironmentVariables){
             var env_vars;
 console.log (config.appEnvironmentVariables);
-            try {env_vars = JSON.parse (config.appEnvironmentVariables);}
+            try {env_vars = JSON.parse (conditionString(config.appEnvironmentVariables));}
             catch (err) {console.log ("Error parsing the environment variables JSON:" + err);}
             if (env_vars){
                 if (cluster.isMaster){ // only output this info once
@@ -357,7 +364,7 @@ console.log (config.appEnvironmentVariables);
     catch (err){ error = err;}
 
     if (config_file){
-        try {config = JSON.parse (config_file);}
+        try {config = JSON.parse (conditionString(config_file));}
         catch (err){ error = err;}
     }
 
@@ -396,7 +403,7 @@ console.log (config.appEnvironmentVariables);
             console.log ("\nServer in cloud: " + cloud.isCloud ());
             process.env['CLOUD'] = cloud.isCloud ();
             process.env['INSTANCE_ID'] = cloud.getInstanceId ();
-            process.env['INSTANCE_DATA'] = JSON.stringify (cloud.getInstanceData ());
+            process.env['INSTANCE_DATA'] = JSON.stringify (conditionString(cloud.getInstanceData ()));
 
 
             function checkAndUpdateEnvironment (master){
