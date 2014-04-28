@@ -347,7 +347,7 @@ async.waterfall ([
                             if (repo){
                                 // reformat the repositories so git understands them
                                 repo = repo.replace ("git://", "https://").replace ("git+ssh://", "");
-                                conole.log ("Cloning " + proj + " @ " + repo + " into " +  config.applicationPath + proj);
+                                console.log ("Cloning " + proj + " @ " + repo + " into " +  config.applicationPath + proj);
                                 var child = exec (" cd " + config.applicationPath + " ; sudo git clone " + repo + " ; cd " +  config.applicationPath + "/" + proj + " ; sudo npm link ", function (err, std, ster){
                                     if (err){
                                         console.log ("\tError cloning. Error:" + ster);
