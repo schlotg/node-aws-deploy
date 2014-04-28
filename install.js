@@ -337,6 +337,7 @@ async.waterfall ([
                         if (!config.applicationPath){
                             var end = config.applicationDirectory.lastIndexOf ('/');
                             config.applicationPath = config.applicationDirectory.substr (0, end + 1);
+                            updateConfig ();
                         }
 
                         // clone and npm link the projects the projects
