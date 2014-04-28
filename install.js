@@ -6,6 +6,8 @@ var app_path, ssh_file, local, email;
 var i = 0;
 var prompt = require ("prompt");
 var config = {}, config_file, local;
+var home_path = require.resolve ("./install.js")).replace ("node-aws-deploy/install.js", "");
+
 
 // renove non-standard quotation marks and replace them with the standard ones
 function conditionString (str){
@@ -62,6 +64,8 @@ async.waterfall ([
             prompt.get (['folder'], function (err, results){
                 if (results['folder']){
                     config.applicationDirectory = results['folder'];
+                    var end = config.applicationDirectory.lastIndexOf ('/');
+                    config.applicationPath = config.applicationDirectory.substr (0, end + 1);
                     updateConfig ();
                 }
                 done ();
@@ -277,7 +281,7 @@ async.waterfall ([
 
     function (done){
         if (!local){
-            console.log (++i + ") Now that your Git repository has been configured, enter the ssh url for remote access so this server can clone it (Press Enter to Skip):");
+            console.log (++i + ") Now that your Git repository has been configured, enter the ssh url for remote access so this server can clone it (Press Enter to skip):");
             prompt.get (['Git repository URL'], function (err, results){
                 var git_url = results['Git repository URL'];
                 if (git_url){
@@ -292,7 +296,7 @@ async.waterfall ([
                             // extract the directory from the git clone string
                             dir = dir && dir[1] && dir[1].split ("'")[1].replace ("...", "");
                             if (dir){
-                                config.applicationDirectory = '/home/ec2-user/' + dir;
+                                config.applicationDirectory = home_path + dir;
                             }
                             console.log ("Configuring the branch and pulling all dependencies....");
                             child = exec ('cd ' + config.applicationDirectory + ' ; ' + config.sudo + ' git checkout ' + config.pullBranch +
@@ -311,6 +315,74 @@ async.waterfall ([
         else{
             done ();
         }
+    },
+
+    function (done){
+        if (!local){
+            console.log (++i + ') If there are any dependencies in your package.json file that need to be pulled on startup, enter them now. Example: ["project1", "project2"] (Press Enter to skip)');
+            prompt.get (['Dependencies'], function (err, results){
+                var dependencies = results['Dependencies'];
+                if (dependencies){
+                    try{dependencies = JSON.parse (conditionString (dependencies));}
+                    catch (e) {console.log ("Error parsing dependencies: " + e);}
+                    config.dependencies = dependencies;
+                    updateConfig ();
+
+                    // grab the package.json file so we can look up these dependencies
+                    var package_json;
+                    try { package_json = require (config.applicationDirectory + "/package.json");}
+                    catch (e) {console.log ("Unable to find the applications package.json. Error:" + e);}
+                    if (package_json){
+
+                        // clone and npm link the projects the projects
+                        // go through each project, clone it outside the main project, and npm link it to the project
+                        async.each (dependencies, function (proj, cb){
+                            // get the repository
+                            var repo = package_json.dependencies[proj];
+                            if (repo){
+                                var child = exec (" cd " + config.applicationPath + " ; sudo git clone " + repo + " ; cd " +  config.applicationPath + "/" + proj + " ; sudo npm link ", function (err, std, ster){
+                                    if (err){
+                                        console.log ("Error cloning " + proj + " @ " + repo + " into " +  config.applicationPath + proj + ". Error:" + ster);
+                                        cb ();
+                                    }
+                                    else{
+                                        console.log ("Cloning " + proj + " @ " + repo + " into " +  config.applicationPath + proj);
+                                        cb ();
+                                    }
+                                });
+                            }
+                            else{
+                                console.log ("Invalid repository. Project: " + proj + ". Repository: " + repo + ".");
+                                cb ();
+                            }
+
+                        }, function (){
+                            // link all of these projects with the main project
+                            var first = true;
+                            async.each (dependencies, function (proj, cb){
+                                var cmd_str = (first) ? " cd " + config.applicationDirectory + " ; sudo npm link " + proj :
+                                    "sudo npm link " + proj;
+                                first = false;
+                                var child = exec (cmd_str, function (err, std, ster){
+                                    if (err){
+                                        console.log ("Error linking " + proj + " to " + config.applicationDirectory);
+                                    }
+                                    else{
+                                        console.log ("linking " + proj + " to " + config.applicationDirectory);
+                                    }
+                                    cb ();
+                                });
+                            }, function  (){
+                                console.log ("Cloning and Linking complete");
+                            });
+                        });
+                    }
+                    else {done ();}
+                }
+                else {done ();}
+            });
+        }
+        else {done ();}
     }
 
 ], function (err){
