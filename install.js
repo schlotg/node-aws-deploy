@@ -334,6 +334,11 @@ async.waterfall ([
                     catch (e) {console.log ("Unable to find the applications package.json. Error:" + e);}
                     if (package_json){
 
+                        if (!config.applicationPath){
+                            var end = config.applicationDirectory.lastIndexOf ('/');
+                            config.applicationPath = config.applicationDirectory.substr (0, end + 1);
+                        }
+
                         // clone and npm link the projects the projects
                         // go through each project, clone it outside the main project, and npm link it to the project
                         async.each (dependencies, function (proj, cb){
