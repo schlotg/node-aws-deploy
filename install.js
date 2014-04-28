@@ -341,7 +341,7 @@ async.waterfall ([
 
                         // clone and npm link the projects the projects
                         // go through each project, clone it outside the main project, and npm link it to the project
-                        async.each (dependencies, function (proj, cb){
+                        async.eachSeries (dependencies, function (proj, cb){
                             // get the repository
                             var repo = package_json.dependencies[proj];
                             if (repo){
@@ -367,7 +367,7 @@ async.waterfall ([
                         }, function (){
                             // link all of these projects with the main project
                             var first = true;
-                            async.each (dependencies, function (proj, cb){
+                            async.eachSeries (dependencies, function (proj, cb){
                                 var cmd_str = (first) ? " cd " + config.applicationDirectory + " ; sudo npm link " + proj :
                                     "sudo npm link " + proj;
                                 first = false;
