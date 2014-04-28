@@ -6,7 +6,7 @@ var app_path, ssh_file, local, email;
 var i = 0;
 var prompt = require ("prompt");
 var config = {}, config_file, local;
-var home_path = require.resolve ("./install.js")).replace ("node-aws-deploy/install.js", "");
+var home_path = require.resolve ("./install.js").replace ("node-aws-deploy/install.js", "");
 
 
 // renove non-standard quotation marks and replace them with the standard ones
