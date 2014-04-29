@@ -370,8 +370,10 @@ async.waterfall ([
                             var first = true;
                             async.eachSeries (dependencies, function (proj, cb){
                                 var cmd_str = (first) ? " cd " + config.applicationDirectory + " ; sudo npm link " + proj :
-                                    "sudo npm link " + proj;
+                                    " sudo npm link " + proj;
                                 first = false;
+                                
+                                console.log ("executing:" + cmd_str);
                                 var child = exec (cmd_str, function (err, std, ster){
                                     if (err){
                                         console.log ("Error linking " + proj + " to " + config.applicationDirectory);
