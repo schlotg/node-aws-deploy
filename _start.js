@@ -13,10 +13,12 @@
 
  "applicationName:" <name of the application>
  "applicationDirectory": <set this to the directory you application lives in>
+ "applicationPath": <the path to the application directory>
  "appEntry": <set this to the name of the 'js' file that is your entry point>
  "commandArguments": <command line arguments you would like pass to the application>
  "appEnvironmentVariables": <{<key>:<pair>}, key pair environment variables that need to be se for the application >
  "appURL": <https://myapp> used for manual webhooks
+ "dependencies" : <dependencies within the package.json that need to be pulled in addition to the application directory>
 
 
  "pullPort": <set this to the port for a pull requests> - defaults to 8000
@@ -62,6 +64,7 @@
     var url = require('url');
     var qs = require ('querystring');
     var cluster = require ('cluster');
+    var async = require ('async');
     var config_file, config, error, pull_error = "";
     var package_json, package_copy, parsed_package, parsed_copy;
     var restart = false;
@@ -76,6 +79,7 @@
     var instance_data;
     var secure_post;
     var pull_field;
+    var pull_list;
 
     // renove non-standard quotation marks and replace them with the standard ones
     function conditionString (str){
@@ -121,27 +125,37 @@
     }
 
     // pull the latest source
-    function pull(cb, master, req){
+    function pull(cb, master, req, res){
         master = (master === true || master === "true");
         pull_error = "";
+        need_restart = false;
+        if (!pull_list){
+            pull_list = [config.applicationDirectory];
+            if (config.dependencies){
+                config.dependencies.forEach (function (proj){
+                    pull_list.push (config.applicationPath + proj);
+                });
+            }
+        }
         function _pull (cb){
-            console.log ("\nPulling the latest code from remote repository");
-            // get the latest code
-            var child = exec (sudo + "git pull", function (err, std, ster){
-                if (err){
-                    console.log ("	Error pulling repository. Error" + ster);
-                    pull_error += "\nError pulling repository. Error" + ster;
-                }
-                else{
-                    console.log ("	" + std);
-                    if (std && std.search ("Already up-to-date") !== -1){
-                        need_restart = false;
+            console.log ("Pulling the latest code from remote repository");
+            async.eachSeries (pull_list, function (proj, cb){
+                // get the latest code
+                console.log ("\nPulling " + proj);
+                var child = exec ("cd " + proj + " ; " + sudo + "git pull", function (err, std, ster){
+                    if (err){
+                        console.log ("\n\nError pulling repository. Error" + ster);
+                        pull_error += "\n\nError pulling repository. Error" + ster;
                     }
                     else{
-                        need_restart = true;
+                        console.log ("\n\n" + std);
+                        if (std && std.search ("Already up-to-date") === -1){
+                            need_restart = true;
+                        }
                     }
-                }
-
+                    cb ();
+                });
+            }, function (err){
                 cb && cb ();
             });
         }
@@ -150,6 +164,13 @@
             if (!master){
                 _pull (function (){
                     if (need_restart && restart){
+                        if (pull_error){
+                            res && res.send('They were errors pulling. Errors:' + pull_error);
+                        }
+                        else{
+                            res && res.send('Pull Successful!');
+                        }
+                        res.send('hello world');
                         process.exit(0);
                     }
                     cb && cb ();
@@ -169,7 +190,12 @@
                         // now pull and restart ourselves
                         _pull (function (){
                             if (need_restart && restart){
-                                process.exit(0);
+                                if (pull_error){
+                                    res && res.send('They were errors pulling. Errors:' + pull_error);
+                                }
+                                else{
+                                    res && res.send('Pull Successful!');
+                                }
                             }
                             cb && cb ();
                         });
@@ -465,7 +491,7 @@
                                     if (pull_error){
                                         console.log ("	There were Errors:%j", pull_error);
                                     }
-                                }, req.query.master, req);
+                                }, req.query.master, req, res);
                             }
                             else{
                                 var msg = "\nIgnoring Pull Request, wrong branch. \n\tListening for: " + listensTo +
