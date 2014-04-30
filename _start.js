@@ -324,7 +324,7 @@
     }
 
     function checkAndUpdateEnvironment (cb, master){
-        if (updating_on || config.local){
+        if (updating_on || config.remote === 'n'){
             // get the latest code
             pull (function (){
                 // check for dependency changes
