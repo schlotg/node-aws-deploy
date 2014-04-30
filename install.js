@@ -46,7 +46,7 @@ async.waterfall ([
     },
 
     function (done){
-        console.log (++i + ") Is this a 'remote' install? (If this is on a remote server the answer is y)");
+        console.log (++i + ") Is this a 'remote' install? (If this is on a remote server the answer is y) (y/n)");
         if (config.applicationDirectory) {console.log ("Current Value = " + config.remote + " (Press <enter> to keep)");}
         prompt.get (['(y/n)'], function (err, results){
             config.remote = (results['(y/n)'] || config.remote || 'n');
@@ -55,6 +55,21 @@ async.waterfall ([
             updateConfig ();
             done ();
         });
+    },
+
+    function (done){
+        if (!local){
+            console.log (++i + ") Would you like the application to check and get the latest AWS updates on every pull? (sudo yum update)");
+            if (config.awsUpdates) {console.log ("Current Value = " + config.awsUpdates + " (Press <enter> to keep)");}
+            prompt.get (['(y/n)'], function (err, results){
+                config.awsUpdates = (results['(y/n)'] || config.awsUpdates || 'n');
+                updateConfig ();
+                done ();
+            });
+        }
+        else{
+            done ();
+        }
     },
 
     function (done){
@@ -128,7 +143,7 @@ async.waterfall ([
         console.log (++i + ") Enter your application's entry point (defaults to 'start.js'). The file name is relative to your application folder");
         if (config.appEntry) {console.log ("Current Value = " + config.appEntry + " (Press <enter> to keep)");}
         prompt.get (['entry point'], function(err, results) {
-            results['entry point'] = results['entry point'] || "start.js";
+            results['entry point'] = results['entry point'] || config.appEntry || "start.js";
             if (results['entry point']){
                 config.appEntry = results['entry point'];
                 updateConfig ();
@@ -319,13 +334,15 @@ async.waterfall ([
 
     function (done){
         if (!local){
-            console.log (++i + ') If there are any dependencies in your package.json file that need to be pulled on startup, enter them now. Example: ["project1", "project2"] (Press Enter to skip)');
+            console.log (++i + ') If there are any dependencies in your package.json file that need to be pulled on startup, enter them now. Example: ["project1", "project2"]');
+            if (config.dependencies) {console.log ("\t\tCurrent Value = " + config.dependencies + " (Press <enter> to keep)");}
             prompt.get (['Dependencies'], function (err, results){
-                var dependencies = results['Dependencies'];
-                if (dependencies){
-                    try{dependencies = JSON.parse (conditionString (dependencies));}
+                var _dependencies = results['Dependencies'];
+                if (_dependencies){
+                    var dependencies;
+                    try{dependencies = JSON.parse (conditionString (_dependencies));}
                     catch (e) {console.log ("Error parsing dependencies: " + e);}
-                    config.dependencies = dependencies;
+                    config.dependencies = _dependencies;
                     updateConfig ();
 
                     // grab the package.json file so we can look up these dependencies

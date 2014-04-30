@@ -10,7 +10,7 @@
  application:
 
 
-
+ "awsUpdates:" <Check for and get this latest AWS updates on a pull>
  "applicationName:" <name of the application>
  "applicationDirectory": <set this to the directory you application lives in>
  "applicationPath": <the path to the application directory>
@@ -251,6 +251,18 @@
         }
     }
 
+    // check AWS dependencies
+    function checkAWSDependencies (cb){
+        if (!config.local && instance_data.deploy){
+            var child = exec("sudo yum -y update", function (err, std, ster){
+                console.log ("\nChecking for AWS Updates\n" + std);
+                if (err) {cb (ster);}
+                else {cb ();}
+            });
+        }
+        else {cb ();}
+    }
+
     // check for any node module changes and reinstall the associated packages.
     // NPM doesn't do a good job of keeping track. So keep a copy of the last successful
     // update and compare it. Find ones that have changed and delete them and the
@@ -310,6 +322,23 @@
             }
         }
     }
+
+    function checkAndUpdateEnvironment (master){
+        if (updating_on || config.local){
+            // get the latest code
+            pull (function (){
+                // check for dependency changes
+                checkAWSDependencies (function (){
+                    checkNodeDependencies (function (){
+                        checkNPMDependencies (function (){
+                            startApp ();
+                        });
+                    });
+                });
+            }, master);
+        }
+    }
+
     // start the application
     function startApp (){
 
@@ -430,20 +459,6 @@
             process.env['INSTANCE_ID'] = cloud.getInstanceId ();
             process.env['INSTANCE_DATA'] = JSON.stringify (cloud.getInstanceData ());
 
-
-            function checkAndUpdateEnvironment (master){
-                if (updating_on){
-                    // get the latest code
-                    pull (function (){
-                        // check for dependency changes
-                        checkNodeDependencies (function (){
-                            checkNPMDependencies (function (){
-                                startApp ();
-                            });
-                        });
-                    }, master);
-                }
-            }
             checkAndUpdateEnvironment (false);
 
             // create a server to listen for pull requests
