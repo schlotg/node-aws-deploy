@@ -323,7 +323,7 @@
         }
     }
 
-    function checkAndUpdateEnvironment (master){
+    function checkAndUpdateEnvironment (cb, master){
         if (updating_on || config.local){
             // get the latest code
             pull (function (){
@@ -331,7 +331,7 @@
                 checkAWSDependencies (function (){
                     checkNodeDependencies (function (){
                         checkNPMDependencies (function (){
-                            startApp ();
+                            cb && cb ();
                         });
                     });
                 });
@@ -464,7 +464,9 @@
             process.env['INSTANCE_ID'] = cloud.getInstanceId ();
             process.env['INSTANCE_DATA'] = JSON.stringify (cloud.getInstanceData ());
 
-            checkAndUpdateEnvironment (false);
+            checkAndUpdateEnvironment (function (){
+                startApp ();
+            }, false);
 
             // create a server to listen for pull requests
             function handleRequests (req, res){
@@ -501,7 +503,7 @@
                             req.body[pull_field] = req.body[pull_field] || "";
                             if (req.body[pull_field].search (listensTo) !== -1){
                                 var _master = req.query.master;
-                                pull (function (){
+                                checkAndUpdateEnvironment (function (){
                                     res.writeHead(200, {'Content-Type': 'text/plain'});
                                     if (pull_error){ res.end("Pull Accepted. There were Errors:" + pull_error); }
                                     else {res.end("Pull Accepted"); }
