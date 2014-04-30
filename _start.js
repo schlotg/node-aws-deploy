@@ -410,10 +410,15 @@
         var date = new Date ();
         console.log (date.toString ());
         console.log ("working directory:" + process.cwd ());
-        process.env["WORKING_DIR"] = process.cwd ();
+        //process.env["WORKING_DIR"] = process.cwd ();
     }
-    var _path = process.env["WORKING_DIR"];// support cluster
-    _path = (_path) ? _path + "/" : "";
+
+    var _path =  (require.resolve ("./_start.js")).replace ("_start.js", "");
+
+
+
+    //var _path = process.env["WORKING_DIR"];// support cluster
+    //_path = (_path) ? _path + "/" : "";
     try {config_file = fs.readFileSync (_path + ".app-config.json");}
     catch (err){ error = err;}
 

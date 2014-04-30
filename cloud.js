@@ -21,15 +21,15 @@ function createCloudInterface() {
         init: function (_config, cb){
             config = _config;
             var _path, config_path;
-            if (process.env["WORKING_DIR"]){
+            /*if (process.env["WORKING_DIR"]){
                 _path = process.env["WORKING_DIR"]; // support cluster
                 _path = (_path) ? _path + "/" : "";
                 config_path = _path + '.app-config.json';
             }
-            else {
+            else {*/
                 _path =  (require.resolve ("./cloud.js")).replace ("cloud.js", "");
                 config_path = _path + '.app-config.json';
-            }
+            //}
             console.log (_path);
 
             if (config && config.accessKeyId && config.secretAccessKey && config.region){
