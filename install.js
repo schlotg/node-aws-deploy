@@ -342,7 +342,7 @@ async.waterfall ([
                     var dependencies;
                     try{dependencies = JSON.parse (conditionString (_dependencies));}
                     catch (e) {console.log ("Error parsing dependencies: " + e);}
-                    config.dependencies = _dependencies;
+                    config.dependencies = dependencies;
                     updateConfig ();
 
                     // grab the package.json file so we can look up these dependencies
