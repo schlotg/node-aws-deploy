@@ -54,7 +54,7 @@ function post (url, body, port, secure, path, cb){
 cloud.init (config, function (){
     var body = {};
     var key = config.pullField || "ref";
-    var branch = config.pullBranch || instance_data.listensTo;
+    var branch = instance_data.listensTo || config.pullBranch;
     body[key] = branch;
     var secure = (config.appURL.search ("https://") !== -1);
     var path = "/pull?";
