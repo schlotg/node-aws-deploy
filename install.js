@@ -366,7 +366,8 @@ async.waterfall ([
                                 // reformat the repositories so git understands them
                                 repo = repo.replace ("git://", "https://").replace ("git+ssh://", "");
                                 console.log ("Cloning " + proj + " @ " + repo + " into " +  config.applicationPath + proj);
-                                var child = exec (" cd " + config.applicationPath + " ; sudo git clone " + repo + " ; cd " +  config.applicationPath + "/" + proj + " ; sudo npm link ", function (err, std, ster){
+                                var child = exec (" cd " + config.applicationPath + " ; sudo git clone " + repo + " ; cd "
+                                    +  config.applicationPath + "/" + proj + " ; sudo npm link ", function (err, std, ster){
                                     if (err){
                                         console.log ("\tError cloning. Error:" + ster);
                                         cb ();
@@ -384,22 +385,24 @@ async.waterfall ([
 
                         }, function (){
                             // link all of these projects with the main project
-                            var first = true;
                             async.eachSeries (dependencies, function (proj, cb){
-                                var cmd_str = (first) ? " cd " + config.applicationDirectory + " ; sudo npm link " + proj :
-                                    " sudo npm link " + proj;
-                                first = false;
+                                var cmd_str = " cd " + config.applicationDirectory + " ; sudo npm link " + proj;
                                 var child = exec (cmd_str, function (err, std, ster){
                                     if (err){
                                         console.log ("Error linking " + proj + " to " + config.applicationDirectory);
+                                        console.log ("\t" + ster);
                                     }
                                     else{
                                         console.log ("linking " + proj + " to " + config.applicationDirectory);
+                                        console.log ("\t" + std);
                                     }
+                                    // give us a couple seconds before moving onto the next one. Seems to be some issue with
+                                    // not letting a few cycles elapse before trying it again.
                                     cb ();
                                 });
                             }, function  (){
                                 console.log ("Cloning and Linking complete");
+                                done ();
                             });
                         });
                     }

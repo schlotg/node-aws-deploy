@@ -265,9 +265,9 @@
 
     // check for any node module changes and reinstall the associated packages.
     // NPM doesn't do a good job of keeping track. So keep a copy of the last successful
-    // update and compare it. Find ones that have changed and delete them and the
+    // update and compare it. Find ones that have changed and delete them and then
     // re-install.
-    function checkNPMDependencies (cb){
+    function checkNPMDependencies (cb, path){
         function deleteRecursiveSync(itemPath) {
             if (fs.existsSync(itemPath)){
                 if (fs.existsSync(itemPath) && fs.statSync(itemPath).isDirectory()) {
@@ -281,39 +281,58 @@
                 }
             }
         }
+
+        var _package_json, _parsed_copy, _parsed_package, _package_copy;
+        if (!path){
+            _package_json = package_json;
+            _parsed_copy = parsed_copy;
+            _parsed_package = parsed_package;
+            _package_copy = package_copy;
+            path = '';
+        }
+        else{
+            try { _package_copy = fs.readFileSync (path + "package.copy");}
+            catch (e) { _package_copy = null;}
+            try {_package_json = fs.readFileSync (path + "package.json");}
+            catch (e) { _package_json = null;}
+            _parsed_package = (_package_json) ? JSON.parse (_package_json) : null;
+            _parsed_copy = (_package_copy) ? JSON.parse (_package_copy) : null;
+        }
+
         console.log ("\nChecking for Node Module dependency changes");
-        if (!package_json){
+        if (!_package_json){
             console.log ("WARNING Your Application has no 'package.json' . It is highly" +
                 " recommended that you use one to manage your NPM dependencies");
         }
-        else{ // delete the module that have changed and re-install with new versions
-            if (!package_copy || package_copy.toString() !== package_json.toString ()){
+        else{ // delete the modules that have changed and re-install with new versions
+            if (!package_copy || package_copy.toString() !== _package_json.toString ()){
                 console.log ("\tNPM dependency changes detected");
-                if (parsed_package && parsed_package.dependencies){
-                    for (var package_name in parsed_package.dependencies){
-                        var copy_version = (parsed_copy && parsed_copy.dependencies) ? parsed_copy.dependencies[package_name] : "";
-                        if (copy_version !== parsed_package.dependencies[package_name]){
-                            deleteRecursiveSync ("node_modules/" + package_name);
+                if (_parsed_package && _parsed_package.dependencies){
+                    for (var package_name in _parsed_package.dependencies){
+                        var copy_version = (_parsed_copy && _parsed_copy.dependencies) ? _parsed_copy.dependencies[package_name] : "";
+                        if (copy_version !== _parsed_package.dependencies[package_name]){
+                            deleteRecursiveSync (path + "node_modules/" + package_name);
                         }
                     }
                 }
-                if (parsed_copy && parsed_copy.dependencies){
-                    for (package_name in parsed_copy.dependencies){
-                        copy_version = (parsed_package && parsed_package.dependencies) ? parsed_package.dependencies[package_name] : "";
-                        if (copy_version !== parsed_copy.dependencies[package_name]){
-                            deleteRecursiveSync ("node_modules/" + package_name);
+                if (_parsed_copy && _parsed_copy.dependencies){
+                    for (package_name in _parsed_copy.dependencies){
+                        copy_version = (_parsed_package && _parsed_package.dependencies) ? _parsed_package.dependencies[package_name] : "";
+                        if (copy_version !== _parsed_copy.dependencies[package_name]){
+                            deleteRecursiveSync (path + "node_modules/" + package_name);
                         }
                     }
                 }
                 console.log ("\tInstalling new Node Modules");
-                var child = exec (sudo + "npm install -d", function (err, std, ster){
+                var cmd_str = (path) ? "cd " + path + " ; " + sudo + "npm install -d" : sudo + "npm install -d";
+                var child = exec (cmd_str, function (err, std, ster){
                     if (err){
                         console.log ("\t\tError installing Node modules. Error:" + ster);
                         pull_error += "\nError installing Node modules. Error:" + ster;
                     }
                     else{
                         console.log ("\t\tSuccessfully updated Node Modules: " + std);
-                        fs.writeFileSync ("package.copy", package_json);
+                        fs.writeFileSync (path + "package.copy", _package_json);
                     }
                     cb && cb ();
                 });
@@ -325,6 +344,45 @@
         }
     }
 
+    function checkAllNPMDependencies (cb){
+        var appDir = (config && config.applicationDirectory) || "";
+        var homePath  = appDir.slice (0, appDir.lastIndexOf ('/'));
+        // first check the local ones
+        checkNPMDependencies (function (){
+            // now check the dependencies of any dependent projects
+            var dependencies = (config && config.dependencies) || [];
+            async.eachSeries (dependencies, function (dependency, done){
+                var path = homePath + "/" + dependency + "/";
+                checkNPMDependencies (function (){
+                    done ();
+                }, path);
+            // other dependency directories are linked in using symbolic links
+            // If we deleted them, add them back in
+            }, function createNPMLinks (){
+                console.log ("creating NPM Links");
+                async.eachSeries (dependencies, function (proj, cb){
+                    var cmd_str = " cd " + appDir + " ; sudo npm link " + proj;
+                    var child = exec (cmd_str, function (err, std, ster){
+                        if (err){
+                            console.log ("Error linking " + proj + " to " + appDir);
+                            console.log ("\t" + ster);
+                        }
+                        else{
+                            console.log ("linking " + proj + " to " + appDir);
+                            console.log ("\t" + std);
+                        }
+                        // give us a couple seconds before moving onto the next one. Seems to be some issue with
+                        // not letting a few cycles elapse before trying it again.
+                        cb ();
+                    });
+                }, function  (){
+                    console.log ("Linking complete");
+                    cb && cb ();    
+                });
+            });
+        });
+    }
+
     function checkAndUpdateEnvironment (cb, master){
         if (updating_on || config.remote === 'n'){
             // get the latest code
@@ -332,7 +390,7 @@
                 // check for dependency changes
                 checkAWSDependencies (function (){
                     checkNodeDependencies (function (){
-                        checkNPMDependencies (function (){
+                        checkAllNPMDependencies (function (){
                             cb && cb ();
                         });
                     });
