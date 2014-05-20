@@ -274,7 +274,8 @@
                     fs.readdirSync(itemPath).forEach(function(childItemName) {
                         deleteRecursiveSync (path.join (itemPath, childItemName));
                     });
-                    fs.rmdirSync(itemPath);
+                    try {fs.rmdirSync(itemPath);}
+                    catch (e){}
                 } else {
                     fs.unlinkSync(itemPath);
                 }
