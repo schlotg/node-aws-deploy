@@ -421,7 +421,6 @@
 
     // start the application
     function startApp (){
-
         // set command line args
         if (config.commandArguments){
             var args = config.commandArguments.split (" ");
