@@ -291,7 +291,7 @@
             _parsed_copy = parsed_copy;
             _parsed_package = parsed_package;
             _package_copy = package_copy;
-            projPath = appDir;
+            projPath = appDir + '/';
         }
         else{
             try { _package_copy = fs.readFileSync (projPath + "package.copy");}
