@@ -270,7 +270,7 @@
     // NPM doesn't do a good job of keeping track. So keep a copy of the last successful
     // update and compare it. Find ones that have changed and delete them and then
     // re-install.
-    function checkNPMDependencies (cb, path){
+    function checkNPMDependencies (cb, projPath){
         function deleteRecursiveSync(itemPath) {
             if (fs.existsSync(itemPath)){
                 if (fs.existsSync(itemPath) && fs.statSync(itemPath).isDirectory()) {
@@ -286,17 +286,17 @@
         }
 
         var _package_json, _parsed_copy, _parsed_package, _package_copy;
-        if (!path){
+        if (!projPath){
             _package_json = package_json;
             _parsed_copy = parsed_copy;
             _parsed_package = parsed_package;
             _package_copy = package_copy;
-            path = '';
+            projPath = '';
         }
         else{
-            try { _package_copy = fs.readFileSync (path + "package.copy");}
+            try { _package_copy = fs.readFileSync (projPath + "package.copy");}
             catch (e) { _package_copy = null;}
-            try {_package_json = fs.readFileSync (path + "package.json");}
+            try {_package_json = fs.readFileSync (projPath + "package.json");}
             catch (e) { _package_json = null;}
             _parsed_package = (_package_json) ? JSON.parse (_package_json) : null;
             _parsed_copy = (_package_copy) ? JSON.parse (_package_copy) : null;
@@ -314,7 +314,7 @@
                     for (var package_name in _parsed_package.dependencies){
                         var copy_version = (_parsed_copy && _parsed_copy.dependencies) ? _parsed_copy.dependencies[package_name] : "";
                         if (copy_version !== _parsed_package.dependencies[package_name]){
-                            deleteRecursiveSync (path + "node_modules/" + package_name);
+                            deleteRecursiveSync (projPath + "node_modules/" + package_name);
                         }
                     }
                 }
@@ -322,12 +322,12 @@
                     for (package_name in _parsed_copy.dependencies){
                         copy_version = (_parsed_package && _parsed_package.dependencies) ? _parsed_package.dependencies[package_name] : "";
                         if (copy_version !== _parsed_copy.dependencies[package_name]){
-                            deleteRecursiveSync (path + "node_modules/" + package_name);
+                            deleteRecursiveSync (projPath + "node_modules/" + package_name);
                         }
                     }
                 }
                 console.log ("\tInstalling new Node Modules");
-                var cmd_str = (path) ? "cd " + path + " ; " + sudo + "npm install -d" : sudo + "npm install -d";
+                var cmd_str = (projPath) ? "cd " + projPath + " ; " + sudo + "npm install -d" : sudo + "npm install -d";
                 var child = exec (cmd_str, function (err, std, ster){
                     if (err){
                         console.log ("\t\tError installing Node modules. Error:" + ster);
@@ -335,7 +335,7 @@
                     }
                     else{
                         console.log ("\t\tSuccessfully updated Node Modules: " + std);
-                        fs.writeFileSync (path + "package.copy", _package_json);
+                        fs.writeFileSync (projPath + "package.copy", _package_json);
                     }
                     cb && cb ();
                 });
