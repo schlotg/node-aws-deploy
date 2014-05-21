@@ -302,13 +302,13 @@
             _parsed_copy = (_package_copy) ? JSON.parse (_package_copy) : null;
         }
 
-        console.log ("\nChecking for Node Module dependency changes");
+        console.log ("\nChecking for Node Module dependency changes for:" + projPath);
         if (!_package_json){
             console.log ("WARNING Your Application has no 'package.json' . It is highly" +
                 " recommended that you use one to manage your NPM dependencies");
         }
         else{ // delete the modules that have changed and re-install with new versions
-            if (!package_copy || package_copy.toString() !== _package_json.toString ()){
+            if (!_package_copy || _package_copy.toString() !== _package_json.toString ()){
                 console.log ("\tNPM dependency changes detected");
                 if (_parsed_package && _parsed_package.dependencies){
                     for (var package_name in _parsed_package.dependencies){
