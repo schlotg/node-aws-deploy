@@ -348,35 +348,33 @@
     }
 
     function checkAllNPMDependencies (cb){
-
-
         // first check the local ones
-        checkNPMDependencies (function (){
-            var dependencies = (config && config.dependencies) || [];
-            console.log ("creating NPM Links");
-            async.eachSeries (dependencies, function (proj, cb){
-                var cmd_str = " cd " + appDir + " ; sudo npm unlink " + proj;
-                var child = exec (cmd_str, function (err, std, ster){
-                    if (err){
-                        console.log ("Error unlinking " + proj + " to " + appDir);
-                        console.log ("\t" + ster);
-                    }
-                    else{
-                        console.log ("unlinking " + proj + " to " + appDir);
-                        console.log ("\t" + std);
-                    }
-                    // give us a couple seconds before moving onto the next one. Seems to be some issue with
-                    // not letting a few cycles elapse before trying it again.
-                    cb ();
-                });
-            }, function  (){
-                console.log ("Unlinking complete");
+        var dependencies = (config && config.dependencies) || [];
+        console.log ("creating NPM Links");
+        async.eachSeries (dependencies, function (proj, cb){
+            var cmd_str = " cd " + appDir + " ; sudo npm unlink " + proj;
+            var child = exec (cmd_str, function (err, std, ster){
+                if (err){
+                    console.log ("Error unlinking " + proj + " to " + appDir);
+                    console.log ("\t" + ster);
+                }
+                else{
+                    console.log ("unlinking " + proj + " to " + appDir);
+                    console.log ("\t" + std);
+                }
+                // give us a couple seconds before moving onto the next one. Seems to be some issue with
+                // not letting a few cycles elapse before trying it again.
+                cb ();
+            });
+        }, function  (){
+            console.log ("Unlinking complete");
+            checkNPMDependencies (function (){
                 // now check the dependencies of any dependent projects
                 async.eachSeries (dependencies, function (dependency, done){
-                    var path = homePath + "/" + dependency + "/";
+                    var projPath = homePath + "/" + dependency + "/";
                     checkNPMDependencies (function (){
                         done ();
-                    }, path);
+                    }, projPath);
                 // other dependency directories are linked in using symbolic links
                 // If we deleted them, add them back in
                 }, function createNPMLinks (){
