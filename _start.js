@@ -328,6 +328,7 @@
                 }
                 console.log ("\tInstalling new Node Modules");
                 var cmd_str = (projPath) ? "cd " + projPath + " ; " + sudo + "npm install -d" : sudo + "npm install -d";
+console.log (cmd_str);
                 var child = exec (cmd_str, function (err, std, ster){
                     if (err){
                         console.log ("\t\tError installing Node modules. Error:" + ster);
