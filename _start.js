@@ -143,14 +143,14 @@
             console.log ("Pulling the latest code from remote repository");
             async.eachSeries (pull_list, function (proj, cb){
                 // get the latest code
-                console.log ("\nPulling " + proj);
+                console.log ("\tPulling " + proj);
                 var child = exec ("cd " + proj + " ; " + sudo + "git pull", function (err, std, ster){
                     if (err){
-                        console.log ("\n\nError pulling repository. Error" + ster);
-                        pull_error += "\n\nError pulling repository. Error" + ster;
+                        console.log ("\t\tError pulling repository. Error" + ster);
+                        pull_error += "\t\tError pulling repository. Error" + ster;
                     }
                     else{
-                        console.log ("\n\n" + std);
+                        console.log ("\t\t" + std);
                         if (std && std.search ("Already up-to-date") === -1){
                             need_restart = true;
                         }
@@ -328,7 +328,6 @@
                 }
                 console.log ("\tInstalling new Node Modules");
                 var cmd_str = (projPath) ? "cd " + projPath + " ; " + sudo + "npm install -d" : sudo + "npm install -d";
-console.log (cmd_str);
                 var child = exec (cmd_str, function (err, std, ster){
                     if (err){
                         console.log ("\t\tError installing Node modules. Error:" + ster);
@@ -356,12 +355,12 @@ console.log (cmd_str);
             var cmd_str = " cd " + appDir + " ; sudo npm unlink " + proj;
             var child = exec (cmd_str, function (err, std, ster){
                 if (err){
-                    console.log ("Error unlinking " + proj + " to " + appDir);
-                    console.log ("\t" + ster);
+                    console.log ("\tError unlinking " + proj + " to " + appDir);
+                    if (ster) { console.log ("\t\t" + ster); }
                 }
                 else{
-                    console.log ("unlinking " + proj + " to " + appDir);
-                    console.log ("\t" + std);
+                    console.log ("\tunlinking " + proj + " to " + appDir);
+                    if (std) { console.log ("\t\t" + std); }
                 }
                 // give us a couple seconds before moving onto the next one. Seems to be some issue with
                 // not letting a few cycles elapse before trying it again.
@@ -384,12 +383,12 @@ console.log (cmd_str);
                         var cmd_str = " cd " + appDir + " ; sudo npm link " + proj;
                         var child = exec (cmd_str, function (err, std, ster){
                             if (err){
-                                console.log ("Error linking " + proj + " to " + appDir);
-                                console.log ("\t" + ster);
+                                console.log ("\tError linking " + proj + " to " + appDir);
+                                if (ster) {console.log ("\t\t" + ster);}
                             }
                             else{
-                                console.log ("linking " + proj + " to " + appDir);
-                                console.log ("\t" + std);
+                                console.log ("\tlinking " + proj + " to " + appDir);
+                                if (std) {console.log ("\t\t" + std);}
                             }
                             // give us a couple seconds before moving onto the next one. Seems to be some issue with
                             // not letting a few cycles elapse before trying it again.
