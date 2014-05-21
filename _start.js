@@ -80,6 +80,8 @@
     var secure_post;
     var pull_field;
     var pull_list;
+    var homePath;
+    var appDir;
 
     // remove non-standard quotation marks and replace them with the standard ones
     function conditionString (str){
@@ -130,10 +132,10 @@
         pull_error = "";
         need_restart = false;
         if (!pull_list){
-            pull_list = [config.applicationDirectory];
+            pull_list = [appDir];
             if (config.dependencies){
                 config.dependencies.forEach (function (proj){
-                    pull_list.push (config.applicationPath + proj);
+                    pull_list.push (homePath + "/" + proj + "/");
                 });
             }
         }
@@ -184,7 +186,8 @@
                         console.log ("Found " + instances.length + " instances, re-posting.");
                         instances.forEach (function (instance){
                             if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
-                                post (instance.dns, req.body, config.pullPort, secure_post, url.format ({pathname:"/pull", query:req.query}));
+                                post (instance.dns, req.body, config.pullPort, secure_post,
+                                    url.format ({pathname:"/pull", query:req.query}));
                             }
                         });
                         // now pull and restart ourselves
@@ -345,8 +348,6 @@
     }
 
     function checkAllNPMDependencies (cb){
-        var appDir = (config && config.applicationDirectory) || "";
-        var homePath  = appDir.slice (0, appDir.lastIndexOf ('/'));
         // first check the local ones
         checkNPMDependencies (function (){
             // now check the dependencies of any dependent projects
@@ -377,7 +378,7 @@
                     });
                 }, function  (){
                     console.log ("Linking complete");
-                    cb && cb ();    
+                    cb && cb ();
                 });
             });
         });
@@ -607,6 +608,10 @@
             console.log ("\tContinuing on with defaults");
             config = {};
         }
+
+        // get the app path and the home path
+        appDir = (config && config.applicationDirectory) || "";
+        homePath  = appDir.slice (0, appDir.lastIndexOf ('/'));
 
         pull_field = config.pullField || "ref";
 
