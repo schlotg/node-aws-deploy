@@ -76,16 +76,19 @@ cloud.init (config, function (){
             if (instances && instances.length){
                 console.log ("Found " + instances.length + " instances, posting pull request.");
                 async.map (instances, function (instance, cb){
-                    post (instance.dns, body, config.pullPort, secure, path, function (err, result){
-                        console.log ("\nPosted pull to:" + instance.dns);
-                        console.log ("\tport:" + config.pullPort);
-                        console.log ("\tsecure:" + secure);
-                        console.log ("\tpath:" + path);
-                        console.log ("\tbody:" + body);
-                        if (err){console.log ("\n\tError:" + err);}
-                        else{console.log ("\n\tResult:" + result);}
-                        cb ();
-                    });
+                    if (instance.dns){
+                        post (instance.dns, body, config.pullPort, secure, path, function (err, result){
+                            console.log ("\nPosted pull to:" + instance.dns);
+                            console.log ("\tport:" + config.pullPort);
+                            console.log ("\tsecure:" + secure);
+                            console.log ("\tpath:" + path);
+                            console.log ("\tbody:" + body);
+                            if (err){console.log ("\n\tError:" + err);}
+                            else{console.log ("\n\tResult:" + result);}
+                            cb ();
+                        });
+                    }
+                    else {cb ();}
                 }, function () {process.exit (0);});
             }
             else{
