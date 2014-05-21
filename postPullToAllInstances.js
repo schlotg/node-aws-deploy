@@ -8,7 +8,13 @@ var async = require ("async");
 
 // Pass in the instance data that you want to post to, should be in the form of a json string
 var instance_data = process.argv[2];
+// pass in command line params we want to set. Useful for app-cache time stamps and versions
+var args = process.argv[3];
+
 try {instance_data = JSON.parse (instance_data);}
+catch (err){}
+
+try {args = JSON.parse (args);}
 catch (err){}
 
 
@@ -48,6 +54,9 @@ function post (url, body, port, secure, path, cb){
     req.write(body);
     req.end();
     console.log ("posted to " + url + " waiting for response....");
+    console.log ("\t port:" + port);
+    console.log ("\t path:" + path);
+    console.log ("\t secure:" + secure);
 }
 
 // go get all the instances and post to them
@@ -55,11 +64,14 @@ cloud.init (config, function (){
     var body = {};
     var key = config.pullField || "ref";
     var branch = instance_data.listensTo || config.pullBranch;
-    body[key] = branch;
     var secure = (config.appURL.search ("https://") !== -1);
     var path = "/pull?";
     if (config.pullSecret) {path += "secret=" + config.pullSecret + "&";}
     path += "master=false";
+
+    // grab any params passed as a JSON and set them in the body
+    body.args = args;
+    body[key] = branch;
 
     if (instance_data){
         cloud.setInstanceData (instance_data);
