@@ -53,10 +53,7 @@ function post (url, body, port, secure, path, cb){
     // write data to request body
     req.write(body);
     req.end();
-    console.log ("posted to " + url + " waiting for response....");
-    console.log ("\t port:" + port);
-    console.log ("\t path:" + path);
-    console.log ("\t secure:" + secure);
+    //console.log ("posted to " + url + " waiting for response....");
 }
 
 // go get all the instances and post to them
