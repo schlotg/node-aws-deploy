@@ -287,6 +287,7 @@
 
         var _package_json, _parsed_copy, _parsed_package, _package_copy;
         if (!projPath){
+console.log ("1");
             _package_json = package_json;
             _parsed_copy = parsed_copy;
             _parsed_package = parsed_package;
@@ -294,6 +295,7 @@
             projPath = appDir;
         }
         else{
+console.log ("2");
             try { _package_copy = fs.readFileSync (projPath + "package.copy");}
             catch (e) { _package_copy = null;}
             try {_package_json = fs.readFileSync (projPath + "package.json");}
@@ -308,6 +310,8 @@
                 " recommended that you use one to manage your NPM dependencies");
         }
         else{ // delete the modules that have changed and re-install with new versions
+console.log (_package_copy);
+console.log (_package_json);
             if (!_package_copy || _package_copy.toString() !== _package_json.toString ()){
                 console.log ("\tNPM dependency changes detected");
                 if (_parsed_package && _parsed_package.dependencies){
