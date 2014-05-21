@@ -310,8 +310,8 @@ console.log ("2");
                 " recommended that you use one to manage your NPM dependencies");
         }
         else{ // delete the modules that have changed and re-install with new versions
-console.log (_package_copy);
-console.log (_package_json);
+console.log (_package_copy.toString ());
+console.log (_package_json).toString ();
             if (!_package_copy || _package_copy.toString() !== _package_json.toString ()){
                 console.log ("\tNPM dependency changes detected");
                 if (_parsed_package && _parsed_package.dependencies){
