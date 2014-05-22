@@ -65,6 +65,9 @@ cloud.init (config, function (){
     var path = "/pull?";
     if (config.pullSecret) {path += "secret=" + config.pullSecret + "&";}
     path += "master=false";
+    if (instance_data && instance_data.secure){
+        secure = instance_data.secure;
+    }
 
     // grab any params passed as a JSON and set them in the body
     body.args = args;
