@@ -516,6 +516,7 @@
                 }
                 if (valid_request){
                     bodyParser (req, res, function (){
+console.log (req.body);
                         var listensTo = (instance_data && instance_data.listensTo) ? instance_data.listensTo : "";
                         req.body[pull_field] = req.body[pull_field] || "";
                         if (req.body[pull_field].search (listensTo) !== -1){
