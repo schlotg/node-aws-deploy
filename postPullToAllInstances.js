@@ -65,7 +65,7 @@ cloud.init (config, function (){
     var path = "/pull?";
     if (config.pullSecret) {path += "secret=" + config.pullSecret + "&";}
     path += "master=false";
-    if (instance_data && instance_data.secure){
+    if (instance_data && (instance_data.secure !== undefined || instance_data.secure !== null)){
         secure = instance_data.secure;
     }
 
@@ -75,11 +75,13 @@ cloud.init (config, function (){
 
     if (instance_data){
         cloud.setInstanceData (instance_data);
+        console.log ("Finding Instances");
         cloud.getInstances (function (err, instances){
             if (instances && instances.length){
                 console.log ("Found " + instances.length + " instances, posting pull request.");
                 async.map (instances, function (instance, cb){
                     if (instance.dns){
+                        console.log ("Posting to: " + instance.dns + " waiting for result...");
                         post (instance.dns, body, config.pullPort, secure, path, function (err, result){
                             console.log ("\nPosted pull to:" + instance.dns);
                             console.log ("\tport:" + config.pullPort);

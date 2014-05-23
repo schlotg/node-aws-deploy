@@ -1,5 +1,6 @@
 var exec = require('child_process').exec;
 var AWS = require ('aws-sdk');
+var async = require ('async');
 var EC2;
 
 /* IMPLEMENTS THE AWS VERSIONS OF:
@@ -21,14 +22,8 @@ function createCloudInterface() {
         init: function (_config, cb){
             config = _config;
             var _path, config_path;
-            /*if (process.env["WORKING_DIR"]){
-                _path = process.env["WORKING_DIR"]; // support cluster
-                _path = (_path) ? _path + "/" : "";
-                config_path = _path + '.app-config.json';
-            }
-            else {*/
-                _path =  (require.resolve ("./cloud.js")).replace ("cloud.js", "");
-                config_path = _path + '.app-config.json';
+            _path =  (require.resolve ("./cloud.js")).replace ("cloud.js", "");
+            config_path = _path + '.app-config.json';
             //}
             console.log (_path);
 
@@ -76,19 +71,14 @@ function createCloudInterface() {
         // get all the instances associated with this AWS account and with the same data type set in user data
         getInstances: function (cb){
             var instances = [];
+            var instance_map = {};
             if (EC2){
                 EC2.describeInstances(function(error, data) {
                     if (error) { cb && cb (error);}
                     else {
-                        if (data.Reservations.length){
-                            var count = data.Reservations.length;
-                            // are we done?
-                            function isDone (){
-                                --count;
-                                if (count <= 0) { cb && cb (null, instances);}
-                            }
-                            data.Reservations.forEach (function (revervation){
-                                revervation.Instances.forEach (function (instance){
+                        async.eachSeries (data.Reservations, function (revervation, done){
+                            async.eachSeries (revervation.Instances, function (instance, _done){
+                                if (instance.PublicDnsName){
                                     EC2.describeInstanceAttribute ({Attribute: "userData", InstanceId:instance.InstanceId}, function (err, data){
                                         if (!err && data.UserData && data.UserData.Value){
                                             var user_data = new Buffer(data.UserData.Value, 'base64').toString ();
@@ -97,20 +87,33 @@ function createCloudInterface() {
                                                 catch (err){}
                                             }
                                             if (user_data.type && instance_user_data.type && user_data.type === instance_user_data.type){
-                                                instances.push ({id:instance.InstanceId, dns:instance.PublicDnsName,
-                                                    user_data:user_data});
+                                                var id = instance.InstanceId;
+                                                if (!instance_map[id]){
+                                                    instances.push ({id:id, dns:instance.PublicDnsName,
+                                                        user_data:user_data});
+                                                    instance_map[id] = true;
+                                                }
                                             }
                                             else if (instance_user_data.type && !user_data.type && instance_user_data.type === user_data){
-                                                instances.push ({id:instance.InstanceId, dns:instance.PublicDnsName,
-                                                    user_data:user_data});
+                                                var id = instance.InstanceId;
+                                                if (!instance_map[id]){
+                                                    instances.push ({id:id, dns:instance.PublicDnsName,
+                                                        user_data:user_data});
+                                                    instance_map[id] = true;
+                                                }
                                             }
                                         }
-                                        isDone ();
+                                        _done ();
                                     });
-                                });
+                                } else {
+                                    _done ();
+                                }
+                            }, function (){
+                                done ();
                             });
-                        }
-                        else { cb && cb (null, instances);}
+                        }, function (err){
+                            cb && cb (err, instances);
+                        });
                     }
                 });
             }
