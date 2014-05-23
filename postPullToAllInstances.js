@@ -14,10 +14,6 @@ var args = process.argv[3];
 try {instance_data = JSON.parse (instance_data);}
 catch (err){}
 
-try {args = JSON.parse (args);}
-catch (err){}
-
-
 // post a command out
 function post (url, body, port, secure, path, cb){
     var qs = require('querystring');
@@ -87,7 +83,7 @@ cloud.init (config, function (){
                             console.log ("\tport:" + config.pullPort);
                             console.log ("\tsecure:" + secure);
                             console.log ("\tpath:" + path);
-                            console.log ("\tbody:" + body);
+                            console.log ("\tbody:%j", body);
                             if (err){console.log ("\n\tError:" + err);}
                             else{console.log ("\n\tResult:" + result);}
                             cb ();
