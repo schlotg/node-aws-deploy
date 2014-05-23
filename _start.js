@@ -502,7 +502,10 @@
                         }
                     });
                     req.on('end', function () {
+console.log ("START_BODY");
 console.log (body);
+console.log ("END_BODY");
+
                         try{req.body = JSON.parse (body);}
                         catch (e){req.body = qs.parse (body);}
                         if (func){func (req, res);}
