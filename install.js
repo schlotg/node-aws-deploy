@@ -9,7 +9,7 @@ var config = {}, config_file, local;
 var home_path = require.resolve ("./install.js").replace ("node-aws-deploy/install.js", "");
 var config = require ("./config");
 var configData = config.data;
-
+var conditionString = config.conditionString;
 
 async.waterfall ([
 

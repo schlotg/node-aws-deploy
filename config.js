@@ -31,6 +31,7 @@ function createConfig (){
         // give access to the data
         data:config,
         path:path,
+        conditionString: conditionString,
         // update it
         update: function (){
             if (config){

@@ -82,6 +82,7 @@
     var pull_list;
     var homePath;
     var appDir;
+    var conditionString = config.conditionString;
 
     // post a command out
     function post (_url, body, port, secure, path, cb){
