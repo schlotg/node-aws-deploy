@@ -66,6 +66,12 @@
     var config = require ('./config');
     var server = require ('./server');
     var configData = config.data;
+
+    if (configData.data){
+        configData = configData.data;
+        config.update ();
+    }
+
     var error, pull_error = "";
     var package_json, package_copy, parsed_package, parsed_copy;
     var restart = false;

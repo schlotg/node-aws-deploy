@@ -43,7 +43,7 @@ function createConfig (){
      return _interface;
 }
 
-var config = createConfig ();
-for (var func in config){
-    exports[func] = config[func];
+var configObj = createConfig ();
+for (var func in configObj){
+    exports[func] = configObj[func];
 }
