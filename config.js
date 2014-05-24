@@ -35,7 +35,8 @@ function createConfig (){
         // update it
         update: function (){
             if (config){
-                var data = JSON.stringify (config, null, 4);
+                var saveData =  config.data || config;
+                var data = JSON.stringify (saveData, null, 4);
                 fs.writeFileSync (configPath, conditionString (data));
             }
         }
