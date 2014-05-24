@@ -518,20 +518,20 @@
                 process.env['INSTANCE_ID'] = cloud.getInstanceId ();
                 process.env['INSTANCE_DATA'] = JSON.stringify (cloud.getInstanceData ());
 
-                checkAndUpdateEnvironment (checkAndUpdateEnvironment, function (){
+                checkAndUpdateEnvironment (function (){
                     if (updating_on){
-                        server.startServer (function (){
+                        server.startServer (checkAndUpdateEnvironment, function (){
                             startApp ();
                         });
                     }
                     else{
+                        console.log ("NO SERVER STARTED");
                         startApp ();
                     }
                 }, false);
             });
         }
         else{
-            console.log ("NO SERVER STARTED");
             startApp ();
         }
     }
