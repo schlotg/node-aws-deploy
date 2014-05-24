@@ -52,7 +52,7 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                         var _master = req.query.master;
                         checkAndUpdateEnvironment (function (){
                             res.writeHead(200, {'Content-Type': 'text/plain'});
-                            else {res.end("Pull Accepted"); }
+                            res.end("Pull Accepted");
                             var date = new Date ();
                             console.log ("\nPull Command, master:" + _master + " @" + date.toString ());
                             //console.log ("	body:%j", req.body);
