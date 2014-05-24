@@ -77,7 +77,6 @@
     var sudo;
     var instance_data;
     var secure_post;
-    var pull_field;
     var pull_list;
     var homePath;
     var appDir;
@@ -501,8 +500,6 @@
         // get the app path and the home path
         appDir = (configData && configData.applicationDirectory) || "";
         homePath  = appDir.slice (0, appDir.lastIndexOf ('/'));
-
-        pull_field = configData.pullField || "ref";
 
         // if nor configured this does nothing
         sudo = (configData.sudo) ? "sudo " : "";

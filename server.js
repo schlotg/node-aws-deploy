@@ -5,6 +5,7 @@ var http = require('http');
 var https = require('https');
 var qs = require ('querystring');
 var secure_post = false;
+var pull_field = configData.pullField || "ref";
 
 
 // start up our pull server
