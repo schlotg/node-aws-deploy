@@ -130,6 +130,9 @@
                 });
             }
         }
+console.log ("\nconfigData:%j", configData);
+console.log ("\pull_list:%j", pull_list);
+
         function _pull (cb){
             console.log ("Pulling the latest code from remote repository");
             async.eachSeries (pull_list, function (proj, cb){
