@@ -414,18 +414,31 @@
     // start the application
     function startApp (){
         // set command line args
-        if (configData.commandArguments){
-            var args = configData.commandArguments.split (" ");
-            if (cluster.isMaster){ // only output this info once
-                console.log ("Set the following Command Line Arguments:\n\t" + configData.commandArguments);
+        if (configData.commandArguments || configData.pullArgs){
+            if (configData.commandArguments){
+                var args = configData.commandArguments.split (" ");
+                if (cluster.isMaster){ // only output this info once
+                    console.log ("Set the following Command Line Arguments:\n\t" + configData.commandArguments);
+                }
+                args && args.forEach (function (arg){
+                    process.argv.push (arg);
+                });
             }
-            args && args.forEach (function (arg){
-                process.argv.push (arg);
-            });
+            if (configData.pullArgs){
+                var pullArgs = configData.pullArgs.split (" ");
+                if (cluster.isMaster){ // only output this info once
+                    console.log ("Set the following Pull Arguments:\n\t" + configData.pullArgs);
+                }
+                pullArgs && pullArgs.forEach (function (arg){
+                    process.argv.push (arg);
+                });
+            }
         }
         else if (cluster.isMaster) {
             console.log ("No Command Line Arguments set!");
         }
+
+
         // set environment variables
         if (configData.appEnvironmentVariables){
             var env_vars;
