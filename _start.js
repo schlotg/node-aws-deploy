@@ -124,6 +124,10 @@
         need_restart = false;
         if (!pull_list){
 console.log ("1");
+console.log ("appDir:" + appDir);
+console.log ("configData.dependencies:%j", configData.dependencies);
+
+
             pull_list = [appDir];
             if (configData.dependencies){
                 configData.dependencies.forEach (function (proj){
