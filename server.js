@@ -45,7 +45,10 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                     req.body[pull_field] = req.body[pull_field] || "";
                     if (req.body[pull_field].search (listensTo) !== -1){
                         if (req.body.args){
-                            configData.pullArgs = req.body.args;
+                            var args;
+                            try {args = JSON.parse (req.body.args);}
+                            catch (e){}
+                            configData.pullArgs = args || req.body.args;
                             config.update ();
                         }
 
