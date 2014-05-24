@@ -2,6 +2,7 @@ var exec = require('child_process').exec;
 var AWS = require ('aws-sdk');
 var async = require ('async');
 var EC2;
+var config = require('./config');
 
 /* IMPLEMENTS THE AWS VERSIONS OF:
  getInstanceId ()
@@ -15,21 +16,17 @@ function createCloudInterface() {
 
     var instance_id;
     var instance_user_data = {};
-    var config;
+    var configData = config.data;
 
     return {
         // this must be called first to init everything
-        init: function (_config, cb){
-            config = _config;
-            var _path, config_path;
-            _path =  (require.resolve ("./cloud.js")).replace ("cloud.js", "");
-            config_path = _path + '.app-config.json';
+        init: function (cb){
             //}
             console.log (_path);
 
-            if (config && config.accessKeyId && config.secretAccessKey && config.region){
+            if (configData && configData.accessKeyId && configData.secretAccessKey && configData.region){
                 var error;
-                try {AWS && AWS.config.loadFromPath(config_path);}
+                try {AWS && AWS.config.loadFromPath(config.path);}
                 catch (err){error = err;}
                 finally { if (!error) {EC2 = AWS && new AWS.EC2();} }
             }

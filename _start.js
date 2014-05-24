@@ -62,15 +62,15 @@
     var exec = require('child_process').exec;
     var path = require('path');
     var url = require('url');
-    var qs = require ('querystring');
     var cluster = require ('cluster');
     var async = require ('async');
-    var config_file, config, error, pull_error = "";
+    var config = require ('./config');
+    var server = require ('./server');
+    var configData = config.data;
+    var error, pull_error = "";
     var package_json, package_copy, parsed_package, parsed_copy;
     var restart = false;
     var need_restart = false;
-    var http = require('http');
-    var https = require('https');
     // This an abstraction layer for different cloud services
     // all AWS specific code or other cloud vendor stuff should go in here
     var cloud = require ("./cloud.js");
@@ -82,14 +82,6 @@
     var pull_list;
     var homePath;
     var appDir;
-
-    // remove non-standard quotation marks and replace them with the standard ones
-    function conditionString (str){
-        var open = String.fromCharCode(147);
-        var close = String.fromCharCode(148);
-        return str && str.replace(open,'"').replace(close,'"');
-    }
-
 
     // post a command out
     function post (_url, body, port, secure, path, cb){
@@ -133,8 +125,8 @@
         need_restart = false;
         if (!pull_list){
             pull_list = [appDir];
-            if (config.dependencies){
-                config.dependencies.forEach (function (proj){
+            if (configData.dependencies){
+                configData.dependencies.forEach (function (proj){
                     pull_list.push (homePath + "/" + proj + "/");
                 });
             }
@@ -172,7 +164,6 @@
                         else{
                             res && res.send('Pull Successful!');
                         }
-                        res.send('hello world');
                         process.exit(0);
                     }
                     cb && cb ();
@@ -186,7 +177,7 @@
                         console.log ("Found " + instances.length + " instances, re-posting.");
                         instances.forEach (function (instance){
                             if (instance.dns && instance.id !== cloud.getInstanceId ()){ // don't signal ourselves
-                                post (instance.dns, req.body, config.pullPort, secure_post,
+                                post (instance.dns, req.body, configData.pullPort, secure_post,
                                     url.format ({pathname:"/pull", query:req.query}));
                             }
                         });
@@ -256,7 +247,7 @@
 
     // check AWS dependencies
     function checkAWSDependencies (cb){
-        if (!config.local && instance_data.deploy){
+        if (!configData.local && instance_data.deploy){
             var child = exec("sudo yum -y update", function (err, std, ster){
                 console.log ("\nChecking for AWS Updates\n" + std);
                 if (err) {cb (ster);}
@@ -349,7 +340,7 @@
 
     function checkAllNPMDependencies (cb){
         // first check the local ones
-        var dependencies = (config && config.dependencies) || [];
+        var dependencies = (configData && configData.dependencies) || [];
         console.log ("creating NPM Links");
         async.eachSeries (dependencies, function (proj, cb){
             var cmd_str = " cd " + appDir + " ; sudo npm unlink " + proj;
@@ -404,7 +395,7 @@
     }
 
     function checkAndUpdateEnvironment (cb, master){
-        if (updating_on || config.remote === 'n'){
+        if (updating_on || configData.remote === 'n'){
             // get the latest code
             pull (function (){
                 // check for dependency changes
@@ -422,10 +413,10 @@
     // start the application
     function startApp (){
         // set command line args
-        if (config.commandArguments){
-            var args = config.commandArguments.split (" ");
+        if (configData.commandArguments){
+            var args = configData.commandArguments.split (" ");
             if (cluster.isMaster){ // only output this info once
-                console.log ("Set the following Command Line Arguments:\n\t" + config.commandArguments);
+                console.log ("Set the following Command Line Arguments:\n\t" + configData.commandArguments);
             }
             args && args.forEach (function (arg){
                 process.argv.push (arg);
@@ -435,9 +426,9 @@
             console.log ("No Command Line Arguments set!");
         }
         // set environment variables
-        if (config.appEnvironmentVariables){
+        if (configData.appEnvironmentVariables){
             var env_vars;
-            try {env_vars = JSON.parse (conditionString(config.appEnvironmentVariables));}
+            try {env_vars = JSON.parse (conditionString(configData.appEnvironmentVariables));}
             catch (err) {console.log ("Error parsing the environment variables JSON:" + err);}
             if (env_vars){
                 if (cluster.isMaster){ // only output this info once
@@ -454,10 +445,10 @@
         }
 
         // call the prelaunch file if available
-        var workingDirectory = config.applicationDirectory || process.cwd();
-        if (cluster.isMaster && config.preLaunch){
-            console.log ("Processing preLaunch File: " + config.preLaunch);
-            var pre_launch = require (workingDirectory + '/' + config.preLaunch);
+        var workingDirectory = configData.applicationDirectory || process.cwd();
+        if (cluster.isMaster && configData.preLaunch){
+            console.log ("Processing preLaunch File: " + configData.preLaunch);
+            var pre_launch = require (workingDirectory + '/' + configData.preLaunch);
             pre_launch.start (function (){
                 _start ();
             });
@@ -467,145 +458,20 @@
         }
 
         function _start (){
-
             // enter the application
-            var appEntry = config.appEntry || "start.js", date;
+            var appEntry = configData.appEntry || "start.js", date;
             if (cluster.isMaster){
                 date = new Date ();
                 console.log ("\n\n********************************************************************************");
-                console.log ("\tSTARTING APPLICATION %s", config.applicationName);
+                console.log ("\tSTARTING APPLICATION %s", configData.applicationName);
                 console.log ("\tCALLING: %s", appEntry);
                 console.log ("\t\tDate:" + date.toUTCString ());
                 console.log ("********************************************************************************\n\n");
             }
-            require (workingDirectory + '/' + appEntry);
             restart = true;
         }
     }
 
-    // start up our pull server
-    function startServer (config, cb){
-        // create a server to listen for pull requests
-        function handleRequests (req, res){
-            function parseURL (req){
-                var url_in = url.parse (req.url, true);
-                req.query = url_in.query;
-                req.href = url_in.href;
-            }
-            function bodyParser (req, res, func){
-                if (req.method == 'POST') {
-                    var body = '';
-                    req.on('data', function (data) {
-                        body += data;
-                        if (body.length > 524488) { // limit the most data someone can send to 1/2 a meg
-                            request.connection.destroy();
-                        }
-                    });
-                    req.on('end', function () {
-console.log ("START_BODY");
-console.log (body);
-console.log ("END_BODY");
-
-                        try{req.body = JSON.parse (body);}
-                        catch (e){req.body = qs.parse (body);}
-                        if (func){func (req, res);}
-                    });
-                }
-            }
-            if (req.url.search ("/pull") !== -1){ // handle a command to pull
-                var valid_request = true;
-                parseURL (req);
-                if (config.pullSecret){
-                    valid_request = (req.query.secret == config.pullSecret) ? true : false;
-                }
-                if (valid_request){
-                    bodyParser (req, res, function (){
-console.log (req.body);
-                        var listensTo = (instance_data && instance_data.listensTo) ? instance_data.listensTo : "";
-                        req.body[pull_field] = req.body[pull_field] || "";
-                        if (req.body[pull_field].search (listensTo) !== -1){
-                            var _master = req.query.master;
-                            checkAndUpdateEnvironment (function (){
-                                res.writeHead(200, {'Content-Type': 'text/plain'});
-                                if (pull_error){ res.end("Pull Accepted. There were Errors:" + pull_error); }
-                                else {res.end("Pull Accepted"); }
-                                var date = new Date ();
-                                console.log ("\nPull Command, master:" + _master + " @" + date.toString ());
-                                //console.log ("	body:%j", req.body);
-                                if (pull_error){
-                                    console.log ("	There were Errors:%j", pull_error);
-                                }
-                            }, req.query.master, req, res);
-                        }
-                        else{
-                            var msg = "\nIgnoring Pull Request, wrong branch. \n\tListening for: " + listensTo +
-                                "\n\t Recieved:" + req.body[pull_field];
-                            console.log (msg);
-                            res.writeHead(404, {'Content-Type': 'text/plain'});
-                            res.end("Ignoring Pull Request, wrong branch.");
-                        }
-                    });
-                }
-                else{
-                    res.writeHead(200, {'Content-Type': 'text/plain'});
-                    res.end("Pull Not Authorized");
-                    console.log ("\nPull Not Authorized @" + date.toString ());
-                    console.log ("	Secret passed in:" + !!(req.query.secret));
-                    console.log ("	Secret required:" + !!config.pullSecret);
-                    console.log ("	Secrets Match:" + (config.pullSecret === req.query.secret));
-                }
-            }
-            else{
-                res.writeHead(404, {'Content-Type': 'text/plain'});
-                res.end("Not Found");
-            }
-        }
-        if (updating_on){
-            var http_port = (config.pullPort || 8000), key, cert, options;
-            if (config.pullKey && config.pullCert){
-                try {key = fs.readFileSync (config.pullKey);}
-                catch (err) {key = null;}
-                try {cert = fs.readFileSync (config.pullCert);}
-                catch (err) {cert = null;}
-                if (key && cert) {
-                    options = {key:key, cert:cert,
-                        ciphers: 'ECDHE-RSA-AES128-SHA256:AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH',
-                        honorCipherOrder: true
-                    };
-                }
-                if (options && config.pullPassphrase){
-                    options.passphrase = config.pullPassphrase;
-                }
-                if (options && config.pullCa && config.pullCa.length){
-                    var ca = [];
-                    config.pullCa.forEach (function (_ca){
-                        try {__ca = fs.readFileSync (_ca, {encoding: "aascii"});}
-                        catch (err) {__ca = null;}
-                        if (__ca){ ca.push (__ca);}
-                    });
-                    if (ca.length){
-                        options.ca = ca;
-                    }
-                }
-            }
-            if (key && cert){
-                secure_post = true;
-                console.log ("\nHTTPS Pull Server Started. Listening on Port:" + http_port);
-                https.createServer (options, handleRequests).listen (http_port);
-            }
-            else{
-                secure_post = false;
-                console.log ("\nWARNING cert and key not specified or invalid. Falling back to HTTP");
-                console.log ("HTTP Pull Server Started. Listening on Port:" + http_port);
-                http.createServer (handleRequests).listen (http_port);
-            }
-            cb && cb ();
-        }
-        else {
-            console.log ("NO PULL SERVER STARTED!!!");
-            cb && cb ();
-        }
-    }
 
 
     /////////////////// CODE EXECUTION STARTS HERE ///////////////////////////
@@ -617,33 +483,18 @@ console.log (req.body);
             console.log ("working directory:" + process.cwd ());
         }
 
-        var _path =  (require.resolve ("./_start.js")).replace ("_start.js", "");
-        try {config_file = fs.readFileSync (_path + ".app-config.json");}
-        catch (err){ error = err;}
-
-        if (config_file){
-            try {config = JSON.parse (conditionString(config_file.toString ()));}
-            catch (err){ error = err;}
-        }
-
-        if (!config) {
-            console.log ("\t'.app-config.json' is missing or invalid: Error:" + error);
-            console.log ("\tContinuing on with defaults");
-            config = {};
-        }
-
         // get the app path and the home path
-        appDir = (config && config.applicationDirectory) || "";
+        appDir = (configData && configData.applicationDirectory) || "";
         homePath  = appDir.slice (0, appDir.lastIndexOf ('/'));
 
-        pull_field = config.pullField || "ref";
+        pull_field = configData.pullField || "ref";
 
         // if nor configured this does nothing
-        sudo = (config.sudo) ? "sudo " : "";
+        sudo = (configData.sudo) ? "sudo " : "";
 
         if (cluster.isMaster){
             // init the cloud code
-            cloud.init (config, function (){
+            cloud.init (function (){
                 instance_data = cloud.getInstanceData ();
                 console.log ("\nGetting Cloud Data")
                 console.log ("  Instance ID:" + cloud.getInstanceId ());
@@ -655,7 +506,7 @@ console.log (req.body);
                 }
 
                 // change directory to the app working directory. Default to the current directory
-                var workingDirectory = config.applicationDirectory || process.cwd();
+                var workingDirectory = configData.applicationDirectory || process.cwd();
                 console.log ("\nWorking Directory is:" + process.cwd());
                 process.chdir (workingDirectory);
                 console.log ("Setting Working Directory to:" + process.cwd());
@@ -667,14 +518,20 @@ console.log (req.body);
                 process.env['INSTANCE_ID'] = cloud.getInstanceId ();
                 process.env['INSTANCE_DATA'] = JSON.stringify (cloud.getInstanceData ());
 
-                checkAndUpdateEnvironment (function (){
-                    startServer (config, function (){
+                checkAndUpdateEnvironment (checkAndUpdateEnvironment, function (){
+                    if (updating_on){
+                        server.startServer (function (){
+                            startApp ();
+                        });
+                    }
+                    else{
                         startApp ();
-                    });
+                    }
                 }, false);
             });
         }
         else{
+            console.log ("NO SERVER STARTED");
             startApp ();
         }
     }

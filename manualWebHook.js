@@ -1,6 +1,6 @@
 // Simple file to simulate a webhook
 
-var config = require ("./.app-config.json") || {};
+var config = require ("./config").data;
 var https = require ("https");
 var http = require ("http");
 

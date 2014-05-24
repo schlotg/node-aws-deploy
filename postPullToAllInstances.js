@@ -1,6 +1,6 @@
 // Simple file to simulate a webhook
 var local_path =  (require.resolve ("./cloud.js")).replace ("cloud.js", "");
-var config = require (local_path + ".app-config.json") || {};
+var config = require ("./config").data;
 var https = require ("https");
 var http = require ("http");
 var cloud = require ("./cloud.js");
