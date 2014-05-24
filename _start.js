@@ -469,6 +469,8 @@
                 console.log ("\t\tDate:" + date.toUTCString ());
                 console.log ("********************************************************************************\n\n");
             }
+            // actually launch the app!!!
+            require (workingDirectory + '/' + appEntry);
             restart = true;
         }
     }
