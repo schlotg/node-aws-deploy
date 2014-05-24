@@ -437,10 +437,10 @@ console.log ("\npull_list:%j", pull_list);
                     process.argv.push (arg);
                 });
             }
-            if (configData.pullArgs){
-                var pullArgs = configData.pullArgs.split (" ");
+            var pullArgs = configData.pullArgs;
+            if (pullArgs){
                 if (cluster.isMaster){ // only output this info once
-                    console.log ("Set the following Pull Arguments:\n\t" + configData.pullArgs);
+                    console.log ("Set the following Pull Arguments:\n\t" + pullArgs);
                 }
                 pullArgs && pullArgs.forEach (function (arg){
                     process.argv.push (arg);
