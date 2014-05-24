@@ -61,7 +61,6 @@
     var fs = require ('fs');
     var exec = require('child_process').exec;
     var path = require('path');
-    var url = require('url');
     var cluster = require ('cluster');
     var async = require ('async');
     var config = require ('./config');
