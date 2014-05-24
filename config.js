@@ -4,6 +4,7 @@ var config_file, config;
 var path = require.resolve ("./config.js").replace ("config.js", "");
 var configPath =  path + ".app-config.json";
 try {config_file = fs.readFileSync (configPath);}
+catch (e){}
 
 
 // remove non-standard quotation marks and replace them with the standard ones
