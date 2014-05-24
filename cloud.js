@@ -22,7 +22,7 @@ function createCloudInterface() {
         // this must be called first to init everything
         init: function (cb){
             //}
-            console.log (_path);
+            console.log (config.path);
 
             if (configData && configData.accessKeyId && configData.secretAccessKey && configData.region){
                 var error;
