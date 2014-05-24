@@ -123,15 +123,17 @@
         pull_error = "";
         need_restart = false;
         if (!pull_list){
+console.log ("1");
             pull_list = [appDir];
             if (configData.dependencies){
                 configData.dependencies.forEach (function (proj){
+console.log ("proj:" + proj);
                     pull_list.push (homePath + "/" + proj + "/");
                 });
             }
         }
 console.log ("\nconfigData:%j", configData);
-console.log ("\pull_list:%j", pull_list);
+console.log ("\npull_list:%j", pull_list);
 
         function _pull (cb){
             console.log ("Pulling the latest code from remote repository");
