@@ -8,7 +8,7 @@ var secure_post = false;
 
 
 // start up our pull server
-function startServer (checkAndUpdateEnvironment, cb){
+function startServer (instance_data, checkAndUpdateEnvironment, cb){
     // create a server to listen for pull requests
     function handleRequests (req, res){
         function parseURL (req){

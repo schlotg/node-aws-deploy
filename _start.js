@@ -535,7 +535,7 @@
 
                 checkAndUpdateEnvironment (function (){
                     if (updating_on){
-                        server.startServer (checkAndUpdateEnvironment, function (){
+                        server.startServer (instance_data, checkAndUpdateEnvironment, function (){
                             startApp ();
                         });
                     }
