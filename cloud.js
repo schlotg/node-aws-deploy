@@ -21,12 +21,11 @@ function createCloudInterface() {
     return {
         // this must be called first to init everything
         init: function (cb){
-            //}
             console.log (config.path);
 
             if (configData && configData.accessKeyId && configData.secretAccessKey && configData.region){
                 var error;
-                try {AWS && AWS.config.loadFromPath(config.path);}
+                try {AWS && AWS.config.loadFromPath(config.path + '/.app-config.json');}
                 catch (err){error = err;}
                 finally { if (!error) {EC2 = AWS && new AWS.EC2();} }
             }
@@ -73,8 +72,8 @@ function createCloudInterface() {
                 EC2.describeInstances(function(error, data) {
                     if (error) { cb && cb (error);}
                     else {
-                        async.eachSeries (data.Reservations, function (revervation, done){
-                            async.eachSeries (revervation.Instances, function (instance, _done){
+                        async.eachSeries (data.Reservations, function (reservation, done){
+                            async.eachSeries (reservation.Instances, function (instance, _done){
                                 if (instance.PublicDnsName){
                                     EC2.describeInstanceAttribute ({Attribute: "userData", InstanceId:instance.InstanceId}, function (err, data){
                                         if (!err && data.UserData && data.UserData.Value){
