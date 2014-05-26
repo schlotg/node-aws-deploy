@@ -53,7 +53,7 @@ function post (url, body, port, secure, path, cb){
 }
 
 // go get all the instances and post to them
-cloud.init (config, function (){
+cloud.init (function (){
     var body = {};
     var key = config.pullField || "ref";
     var branch = instance_data.listensTo || config.pullBranch;
