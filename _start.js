@@ -360,8 +360,9 @@
                 var cmd_str = (projPath) ? "cd " + projPath + " ; " + sudo + "npm install -d" : sudo + "npm install -d";
                 var child = exec (cmd_str, function (err, std, ster){
                     if (err){
-                        console.log ("\t\tError installing Node modules. Error:" + ster);
-                        pull_error += "\nError installing Node modules. Error:" + ster;
+                        console.log ("\t\tError installing Node modules. Error:" + ster + " :" + err);
+                        pull_error += "\nError installing Node modules. Error:" + ster + " :" + err;
+                        fs.writeFileSync (projPath + "package.copy", _package_json);
                     }
                     else{
                         console.log ("\t\tSuccessfully updated Node Modules: " + std);
