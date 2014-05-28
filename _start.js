@@ -268,13 +268,17 @@
             if (fs.existsSync(itemPath)){
                 // if a directory but not a a symbolic link. (Leave those)
                 var symbolicLink = fs.lstatSync(itemPath).isSymbolicLink ();
-                if (fs.statSync(itemPath).isDirectory() && !symbolicLink) {
-                    fs.readdirSync(itemPath).forEach(function(childItemName) {
-                        walkRecursive (path.join (itemPath, childItemName));
-                    });
-                    if (symbolicLink){
+                if (fs.statSync(itemPath).isDirectory()){
+                    if (!symbolicLink) {
+                        fs.readdirSync(itemPath).forEach(function(childItemName) {
+                            walkRecursive (path.join (itemPath, childItemName));
+                        });
+                    }
+                    else {
                         var index = itemPath.lastIndexOf("/");
-                        symbolicLinks.push (itemPath.split );
+                        if (index > 0) {index++;}
+
+                        symbolicLinks.push (itemPath.slice (index, itemPath.length));
                     }
                 }
             }
@@ -407,9 +411,9 @@
                     // If we deleted them, add them back in
                 }, function createNPMLinks (){
                     console.log ("creating NPM Links");
-                    var links = dependencies || symbolicLinks;
+                    var links = (dependencies && dependencies.length) ? dependencies : symbolicLinks;
                     async.eachSeries (links, function (proj, cb){
-                        var cmd_str = " cd " + appDir + " ; sudo npm link " + proj;
+                        var cmd_str = " cd " + appDir + " ; " + sudo + " npm link " + proj;
                         var child = exec (cmd_str, function (err, std, ster){
                             if (err){
                                 console.log ("\tError linking " + proj + " to " + appDir);
