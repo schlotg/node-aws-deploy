@@ -68,9 +68,9 @@
     var configData = config.data;
 
     /*if (configData.data){
-        configData = configData.data;
-        config.update ();
-    }*/
+     configData = configData.data;
+     config.update ();
+     }*/
 
     var error, pull_error = "";
     var package_json, package_copy, parsed_package, parsed_copy;
@@ -262,23 +262,53 @@
         else {cb ();}
     }
 
+    function getSymbolicLinks (itemPath){
+        var symbolicLinks = [];
+        function walkRecursive (itemPath) {
+            if (fs.existsSync(itemPath)){
+                // if a directory but not a a symbolic link. (Leave those)
+                var symbolicLink = fs.lstatSync(itemPath).isSymbolicLink ();
+                if (fs.statSync(itemPath).isDirectory() && !symbolicLink) {
+                    fs.readdirSync(itemPath).forEach(function(childItemName) {
+                        walkRecursive (path.join (itemPath, childItemName));
+                    });
+                    if (symbolicLink){
+                        var index = itemPath.lastIndexOf("/");
+                        symbolicLinks.push (itemPath.split );
+                    }
+                }
+            }
+        }
+        walkRecursive (itemPath);
+        return symbolicLinks;
+    }
+
+
     // check for any node module changes and reinstall the associated packages.
     // NPM doesn't do a good job of keeping track. So keep a copy of the last successful
     // update and compare it. Find ones that have changed and delete them and then
     // re-install.
     function checkNPMDependencies (cb, projPath){
-        function deleteRecursiveSync(itemPath) {
-            if (fs.existsSync(itemPath)){
-                if (fs.existsSync(itemPath) && fs.statSync(itemPath).isDirectory()) {
-                    fs.readdirSync(itemPath).forEach(function(childItemName) {
-                        deleteRecursiveSync (path.join (itemPath, childItemName));
-                    });
-                    try {fs.rmdirSync(itemPath);}
-                    catch (e){}
-                } else {
-                    fs.unlinkSync(itemPath);
+
+        function deleteRecursiveSync (itemPath){
+            function walkRecursive (itemPath) {
+                if (fs.existsSync(itemPath)){
+                    // if a directory but not a a symbolic link. (Leave those)
+                    var symbolicLink = fs.lstatSync(itemPath).isSymbolicLink ();
+                    if (fs.statSync(itemPath).isDirectory() && !symbolicLink) {
+                        fs.readdirSync(itemPath).forEach(function(childItemName) {
+                            walkRecursive (path.join (itemPath, childItemName));
+                        });
+                        if (!symbolicLink){
+                            try {fs.rmdirSync(itemPath);}
+                            catch (e){}
+                        }
+                    } else {
+                        fs.unlinkSync(itemPath);
+                    }
                 }
             }
+            walkRecursive (itemPath);
         }
 
         var _package_json, _parsed_copy, _parsed_package, _package_copy;
@@ -344,11 +374,13 @@
     }
 
     function checkAllNPMDependencies (cb){
+
+        var symbolicLinks = getSymbolicLinks (appDir + "/node_modules/");
         // first check the local ones
         var dependencies = (configData && configData.dependencies) || [];
         console.log ("creating NPM Links");
         async.eachSeries (dependencies, function (proj, cb){
-            var cmd_str = " cd " + appDir + " ; sudo npm unlink " + proj;
+            var cmd_str = " cd " + appDir + " ; " + sudo + " npm unlink " + proj;
             var child = exec (cmd_str, function (err, std, ster){
                 if (err){
                     console.log ("\tError unlinking " + proj + " to " + appDir);
@@ -371,11 +403,12 @@
                     checkNPMDependencies (function (){
                         done ();
                     }, projPath);
-                // other dependency directories are linked in using symbolic links
-                // If we deleted them, add them back in
+                    // other dependency directories are linked in using symbolic links
+                    // If we deleted them, add them back in
                 }, function createNPMLinks (){
                     console.log ("creating NPM Links");
-                    async.eachSeries (dependencies, function (proj, cb){
+                    var links = dependencies || symbolicLinks;
+                    async.eachSeries (links, function (proj, cb){
                         var cmd_str = " cd " + appDir + " ; sudo npm link " + proj;
                         var child = exec (cmd_str, function (err, std, ster){
                             if (err){
@@ -386,8 +419,6 @@
                                 console.log ("\tlinking " + proj + " to " + appDir);
                                 if (std) {console.log ("\t\t" + std);}
                             }
-                            // give us a couple seconds before moving onto the next one. Seems to be some issue with
-                            // not letting a few cycles elapse before trying it again.
                             cb ();
                         });
                     }, function  (){
