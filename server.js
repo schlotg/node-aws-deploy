@@ -51,6 +51,7 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                             args = args || req.body.args;
                             if (args){ // only save these out if we have new ones
                                 console.log ("\tApplying pullArgs:%j", args);
+                                configData.pullArgs = configData.pullArgs || {};
                                 for (var k in args){
                                     configData.pullArgs[k] = args[k];
                                 }
