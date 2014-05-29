@@ -464,6 +464,7 @@
                     process.argv.push (arg);
                 });
             }
+            /*
             var pullArgs = configData.pullArgs;
             if (pullArgs){
                 if (cluster.isMaster){ // only output this info once
@@ -472,7 +473,7 @@
                 pullArgs && pullArgs.forEach (function (arg){
                     process.argv.push (arg);
                 });
-            }
+            }*/
         }
         else if (cluster.isMaster) {
             console.log ("No Command Line Arguments set!");
