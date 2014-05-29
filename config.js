@@ -5,6 +5,7 @@ var path = require.resolve ("./config.js").replace ("config.js", "");
 var configPath =  path + ".app-config.json";
 try {config_file = fs.readFileSync (configPath);}
 catch (e){}
+// export the config path so other files can find and load it
 process['CONFIG_PATH'] = path;
 
 // remove non-standard quotation marks and replace them with the standard ones

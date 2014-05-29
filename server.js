@@ -48,8 +48,17 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                             var args;
                             try {args = JSON.parse (req.body.args);}
                             catch (e){}
-                            configData.pullArgs = args || req.body.args;
-                            config.update ();
+                            args = args || req.body.args;
+                            if (args){ // only save these out if we have new ones
+                                console.log ("\tApplying pullArgs:%j", args);
+                                for (var k in args){
+                                    configData.pullArgs[k] = args[k];
+                                }
+                                config.update ();
+                            }
+                            else{
+                                console.log ("\tNo pullArgs passed in");
+                            }
                         }
 
                         var _master = req.query.master;
