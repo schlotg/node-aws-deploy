@@ -1,11 +1,11 @@
 // handle all the config loading, updating, and saving
 var fs = require ("fs");
-var config_file, config;
+var config_file, config, error;
 var path = require.resolve ("./config.js").replace ("config.js", "");
 var configPath =  path + ".app-config.json";
 try {config_file = fs.readFileSync (configPath);}
 catch (e){}
-
+process['CONFIG_PATH'] = path;
 
 // remove non-standard quotation marks and replace them with the standard ones
 function conditionString (str){
@@ -41,7 +41,7 @@ function createConfig (){
             }
         }
     };
-     return _interface;
+    return _interface;
 }
 
 var configObj = createConfig ();
