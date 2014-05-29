@@ -310,7 +310,7 @@ async.waterfall ([
     },
 
     function (done){
-        if (!local){
+        if (true){
             console.log (++i + ') If there are any dependencies in your package.json file that need to be pulled on startup, enter them now. Example: ["project1", "project2"]');
             if (configData.dependencies) {console.log ("\t\tCurrent Value = " + configData.dependencies + " (Press <enter> to keep)");}
             prompt.get (['Dependencies'], function (err, results){
@@ -321,67 +321,69 @@ async.waterfall ([
                     catch (e) {console.log ("Error parsing dependencies: " + e);}
                     configData.dependencies = dependencies;
                     config.update ();
+                    if (!local){
+                        // grab the package.json file so we can look up these dependencies
+                        var package_json;
+                        try { package_json = require (config.applicationDirectory + "/package.json");}
+                        catch (e) {console.log ("Unable to find the applications package.json. Error:" + e);}
+                        if (package_json){
 
-                    // grab the package.json file so we can look up these dependencies
-                    var package_json;
-                    try { package_json = require (config.applicationDirectory + "/package.json");}
-                    catch (e) {console.log ("Unable to find the applications package.json. Error:" + e);}
-                    if (package_json){
-
-                        if (!configData.applicationPath){
-                            var end = configData.applicationDirectory.lastIndexOf ('/');
-                            configData.applicationPath = configData.applicationDirectory.substr (0, end + 1);
-                            config.update ();
-                        }
-
-                        // clone and npm link the projects the projects
-                        // go through each project, clone it outside the main project, and npm link it to the project
-                        async.eachSeries (dependencies, function (proj, cb){
-                            // get the repository
-                            var repo = package_json.dependencies[proj];
-                            if (repo){
-                                // reformat the repositories so git understands them
-                                repo = repo.replace ("git://", "https://").replace ("git+ssh://", "");
-                                console.log ("Cloning " + proj + " @ " + repo + " into " +  configData.applicationPath + proj);
-                                var child = exec (" cd " + configData.applicationPath + " ; sudo git clone " + repo + " ; cd "
-                                    +  configData.applicationPath + "/" + proj + " ; sudo npm link ", function (err, std, ster){
-                                    if (err){
-                                        console.log ("\tError cloning. Error:" + ster);
-                                        cb ();
-                                    }
-                                    else{
-                                        console.log ("\tClone Successful!");
-                                        cb ();
-                                    }
-                                });
-                            }
-                            else{
-                                console.log ("Invalid repository. Project: " + proj + ". Repository: " + repo + ".");
-                                cb ();
+                            if (!configData.applicationPath){
+                                var end = configData.applicationDirectory.lastIndexOf ('/');
+                                configData.applicationPath = configData.applicationDirectory.substr (0, end + 1);
+                                config.update ();
                             }
 
-                        }, function (){
-                            // link all of these projects with the main project
+                            // clone and npm link the projects the projects
+                            // go through each project, clone it outside the main project, and npm link it to the project
                             async.eachSeries (dependencies, function (proj, cb){
-                                var cmd_str = " cd " + configData.applicationDirectory + " ; sudo npm link " + proj;
-                                var child = exec (cmd_str, function (err, std, ster){
-                                    if (err){
-                                        console.log ("Error linking " + proj + " to " + configData.applicationDirectory);
-                                        console.log ("\t" + ster);
-                                    }
-                                    else{
-                                        console.log ("linking " + proj + " to " + configData.applicationDirectory);
-                                        console.log ("\t" + std);
-                                    }
-                                    // give us a couple seconds before moving onto the next one. Seems to be some issue with
-                                    // not letting a few cycles elapse before trying it again.
+                                // get the repository
+                                var repo = package_json.dependencies[proj];
+                                if (repo){
+                                    // reformat the repositories so git understands them
+                                    repo = repo.replace ("git://", "https://").replace ("git+ssh://", "");
+                                    console.log ("Cloning " + proj + " @ " + repo + " into " +  configData.applicationPath + proj);
+                                    var child = exec (" cd " + configData.applicationPath + " ; sudo git clone " + repo + " ; cd "
+                                        +  configData.applicationPath + "/" + proj + " ; sudo npm link ", function (err, std, ster){
+                                        if (err){
+                                            console.log ("\tError cloning. Error:" + ster);
+                                            cb ();
+                                        }
+                                        else{
+                                            console.log ("\tClone Successful!");
+                                            cb ();
+                                        }
+                                    });
+                                }
+                                else{
+                                    console.log ("Invalid repository. Project: " + proj + ". Repository: " + repo + ".");
                                     cb ();
+                                }
+
+                            }, function (){
+                                // link all of these projects with the main project
+                                async.eachSeries (dependencies, function (proj, cb){
+                                    var cmd_str = " cd " + configData.applicationDirectory + " ; sudo npm link " + proj;
+                                    var child = exec (cmd_str, function (err, std, ster){
+                                        if (err){
+                                            console.log ("Error linking " + proj + " to " + configData.applicationDirectory);
+                                            console.log ("\t" + ster);
+                                        }
+                                        else{
+                                            console.log ("linking " + proj + " to " + configData.applicationDirectory);
+                                            console.log ("\t" + std);
+                                        }
+                                        // give us a couple seconds before moving onto the next one. Seems to be some issue with
+                                        // not letting a few cycles elapse before trying it again.
+                                        cb ();
+                                    });
+                                }, function  (){
+                                    console.log ("Cloning and Linking complete");
+                                    done ();
                                 });
-                            }, function  (){
-                                console.log ("Cloning and Linking complete");
-                                done ();
                             });
-                        });
+                        }
+                        else {done ();}
                     }
                     else {done ();}
                 }
