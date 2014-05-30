@@ -27,7 +27,6 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                     }
                 });
                 req.on('end', function () {
-console.log ("BODY:" + body);
                     try{req.body = JSON.parse (body);}
                     catch (e){req.body = qs.parse (body);}
                     if (func){func (req, res);}
@@ -52,10 +51,11 @@ console.log ("BODY:" + body);
                             args = args || req.body.args;
                             if (args){ // only save these out if we have new ones
                                 console.log ("\tApplying pullArgs:%j", args);
-                                configData.pullArgs = configData.pullArgs || {};
-                                for (var k in args){
-                                    configData.pullArgs[k] = args[k];
-                                }
+                                configData.pullArgs = configData.pullArgs || [];
+                                args.pullArgs.forEach (function (arg){
+                                    var k in arg;
+                                    configData.pullArgs[k] = arg[k];
+                                });
                                 config.update ();
                             }
                             else{
