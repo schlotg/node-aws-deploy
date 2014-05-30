@@ -53,8 +53,9 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                                 console.log ("\tApplying pullArgs:%j", args);
                                 configData.pullArgs = configData.pullArgs || [];
                                 args.pullArgs.forEach (function (arg){
-                                    var k in arg;
-                                    configData.pullArgs[k] = arg[k];
+                                    for(var k in arg){
+                                        configData.pullArgs[k] = arg[k];
+                                    }
                                 });
                                 config.update ();
                             }
