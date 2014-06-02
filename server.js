@@ -7,7 +7,7 @@ var qs = require ('querystring');
 var secure_post = false;
 var pull_field = configData.pullField || "ref";
 var restart = false;
-
+var POST_MESSAGE_SIZE = 65536;
 
 // start up our pull server
 function startServer (instance_data, checkAndUpdateEnvironment, cb){
@@ -23,7 +23,7 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                 var body = '';
                 req.on('data', function (data) {
                     body += data;
-                    if (body.length > 524488) { // limit the most data someone can send to 1/2 a meg
+                    if (body.length > POST_MESSAGE_SIZE) { // limit the most data someone can send
                         request.connection.destroy();
                     }
                 });
