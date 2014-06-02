@@ -87,6 +87,7 @@
     var homePath;
     var appDir;
     var conditionString = config.conditionString;
+    var requestRestart = false;
 
     // post a command out
     function post (_url, body, port, secure, path, cb){
@@ -162,7 +163,7 @@
         if (cloud.isCloud ()){
             if (!master){
                 _pull (function (){
-                    if (need_restart && restart){
+                    if (need_restart && restart || requestRestart){
                         if (pull_error){
                             res && res.send('They were errors pulling. Errors:' + pull_error);
                         }
@@ -435,7 +436,8 @@
         });
     }
 
-    function checkAndUpdateEnvironment (cb, master){
+    function checkAndUpdateEnvironment (_requestRestart, cb, master){
+        requestRestart = _requestRestart;
         if (updating_on || configData.remote === 'n'){
             // get the latest code
             pull (function (){
@@ -464,16 +466,6 @@
                     process.argv.push (arg);
                 });
             }
-            /*
-            var pullArgs = configData.pullArgs;
-            if (pullArgs){
-                if (cluster.isMaster){ // only output this info once
-                    console.log ("Set the following Pull Arguments:\n\t" + pullArgs);
-                }
-                pullArgs && pullArgs.forEach (function (arg){
-                    process.argv.push (arg);
-                });
-            }*/
         }
         else if (cluster.isMaster) {
             console.log ("No Command Line Arguments set!");
@@ -573,16 +565,16 @@
                 process.env['INSTANCE_ID'] = cloud.getInstanceId ();
                 process.env['INSTANCE_DATA'] = JSON.stringify (cloud.getInstanceData ());
 
-                checkAndUpdateEnvironment (function (){
-                    if (updating_on){
+                checkAndUpdateEnvironment (false, function (){
+                    //if (updating_on){
                         server.startServer (instance_data, checkAndUpdateEnvironment, function (){
                             startApp ();
                         });
-                    }
-                    else{
-                        console.log ("NO SERVER STARTED");
-                        startApp ();
-                    }
+                    //}
+                    //else{
+                        //console.log ("NO SERVER STARTED");
+                        //startApp ();
+                    //}
                 }, false);
             });
         }

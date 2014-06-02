@@ -6,6 +6,7 @@ var https = require('https');
 var qs = require ('querystring');
 var secure_post = false;
 var pull_field = configData.pullField || "ref";
+var restart = false;
 
 
 // start up our pull server
@@ -33,7 +34,8 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                 });
             }
         }
-        if (req.url.search ("/pull") !== -1){ // handle a command to pull
+        // handle pull requests, only pull if deploy is set to true
+        if (req.url.search ("/pull") !== -1 && instance_data.deploy){ // handle a command to pull
             var valid_request = true;
             parseURL (req);
             if (configData.pullSecret){
@@ -50,10 +52,14 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                             catch (e){}
                             args = args || req.body.args;
                             if (args){ // only save these out if we have new ones
+                                restart = false;
                                 console.log ("\tApplying pullArgs:%j", args);
                                 configData.pullArgs = configData.pullArgs || {};
                                 for (var k in args){
-                                    configData.pullArgs[k] = args[k];
+                                    if (configData.pullArgs[k] !== args[k]){
+                                        configData.pullArgs[k] = args[k];
+                                        restart = true;
+                                    }
                                 }
                                 config.update ();
                             }
@@ -63,7 +69,7 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                         }
 
                         var _master = req.query.master;
-                        checkAndUpdateEnvironment (function (){
+                        checkAndUpdateEnvironment (restart, function (){
                             res.writeHead(200, {'Content-Type': 'text/plain'});
                             res.end("Pull Accepted");
                             var date = new Date ();
@@ -87,6 +93,20 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                 console.log ("	Secret passed in:" + !!(req.query.secret));
                 console.log ("	Secret required:" + !!configData.pullSecret);
                 console.log ("	Secrets Match:" + (configData.pullSecret === req.query.secret));
+            }
+        }
+        else if (req.url.search ("/restart") !== -1){
+            var valid_request = true;
+            parseURL (req);
+            if (configData.pullSecret){
+                valid_request = (req.query.secret == configData.pullSecret) ? true : false;
+            }
+            if (valid_request){
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.end("Restarting");
+                setTimeout (function (){
+                    process.exit (0);
+                }, 1000);
             }
         }
         else{
