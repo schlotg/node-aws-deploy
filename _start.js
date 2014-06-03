@@ -57,6 +57,31 @@
 
  *////////////////////////////////////////////////////////////////////////////
 
+
+
+// create a class to capture stdout
+function CaptureStdout(callback) {
+    var oldWrite = process.stdout.write;
+    var fs = require ('fs');
+
+    var _interface = {
+        capture: function (verbose, logFile){
+            process.stdout.write = (function(string, encoding, fd) {
+                if (verbose){
+                    oldWrite.apply(process.stdout, arguments);
+                }
+                if (logFile){
+                    fs.appendFile(logFile, string);
+                }
+            };
+        },
+        release: function (){
+            process.stdout.write = oldWrite;
+        }
+    };
+    return _interface;
+}
+
 (function (){
     var fs = require ('fs');
     var exec = require('child_process').exec;
@@ -527,6 +552,15 @@
     /////////////////// CODE EXECUTION STARTS HERE ///////////////////////////
     function run (){
         if (cluster.isMaster){
+
+            // capture std out so its logged
+            var capture = CaptureStdout ();
+            var logDirectory = configData.applicationDirectory || "";
+            logDirectory += '/logs';
+            try {fs.mkdirSync (logDirectory);}
+            catch (e) {}
+            capture.init (true, 'log');
+
             console.log ("********** Node-Deploy Started *********");
             var date = new Date ();
             console.log (date.toString ());
