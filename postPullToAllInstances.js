@@ -11,13 +11,8 @@ var instance_data = process.argv[2];
 // pass in command line params we want to set. Useful for app-cache time stamps and versions
 var args = process.argv[3];
 
-console.log (args);
-
 try {args = JSON.parse (args);}
 catch (e){ args = []; console.log (e);}
-
-console.log (instance_data);
-console.log (args);
 
 try {instance_data = JSON.parse (instance_data);}
 catch (err){}
@@ -74,7 +69,7 @@ cloud.init (function (){
     }
 
     // grab any params passed as a JSON and set them in the body
-    body.args = args;
+    body.args = JSON.stringify(args);
     body[key] = branch;
 
     if (instance_data){
