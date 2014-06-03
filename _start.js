@@ -165,10 +165,10 @@
                 _pull (function (){
                     if (need_restart && restart || requestRestart){
                         if (pull_error){
-                            res && res.send('They were errors pulling. Errors:' + pull_error);
+                            res && res.send('They were errors pulling. Errors:' + pull_error + ', restarting');
                         }
                         else{
-                            res && res.send('Pull Successful!');
+                            res && res.send('Pull Successful!, restarting');
                         }
                         process.exit(0);
                     }
@@ -210,7 +210,7 @@
         else {cb && cb ();}
     }
     // check if any NPM dependencies changed
-    function checkNodeDependencies (cb){
+    function checkNodeDependencies (cb, req, res){
         // read in our files
         console.log ("\nChecking for Node version changes");
         try { package_copy = fs.readFileSync ("package.copy");}
@@ -235,6 +235,7 @@
                     }
                     else{
                         console.log ("		Node upgrade success, restarting");
+                        res && res.send ("Upgraded Node, restarting");
                         process.exit (0); // exit so we get restarted
                     }
                     cb & cb ();
@@ -436,7 +437,7 @@
         });
     }
 
-    function checkAndUpdateEnvironment (_requestRestart, cb, master){
+    function checkAndUpdateEnvironment (_requestRestart, cb, master, req, res){
         requestRestart = _requestRestart;
         if (updating_on || configData.remote === 'n'){
             // get the latest code
@@ -446,10 +447,10 @@
                     checkNodeDependencies (function (){
                         checkAllNPMDependencies (function (){
                             cb && cb ();
-                        });
-                    });
-                });
-            }, master);
+                        }, req, res);
+                    }, req, res);
+                }, req, res);
+            }, master, req, res);
         }
     }
 
