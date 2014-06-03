@@ -8,9 +8,12 @@ var secure_post = false;
 var pull_field = configData.pullField || "ref";
 var restart = false;
 var POST_MESSAGE_SIZE = 65536;
+var deploy = false;
+var fs = require('fs');
 
 // start up our pull server
 function startServer (instance_data, checkAndUpdateEnvironment, cb){
+    deploy = instance_data && instance_data.deploy;
     // create a server to listen for pull requests
     function handleRequests (req, res){
         function parseURL (req){
@@ -33,9 +36,13 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                     if (func){func (req, res);}
                 });
             }
+            res.send = function (str){
+                this.writeHead(404, {'Content-Type': 'text/plain'});
+                this.end(str);
+            };
         }
         // handle pull requests, only pull if deploy is set to true
-        if (req.url.search ("/pull") !== -1 && instance_data.deploy){ // handle a command to pull
+        if (req.url.search ("/pull") !== -1 && deploy){ // handle a command to pull
             var valid_request = true;
             parseURL (req);
             if (configData.pullSecret){
@@ -69,10 +76,6 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                         }
 
                         var _master = req.query.master;
-                        res.send = function (str){
-                            this.writeHead(404, {'Content-Type': 'text/plain'});
-                            this.end(str);
-                        };
                         checkAndUpdateEnvironment (restart, function (){
                             res.send("Pull Accepted");
                             var date = new Date ();
@@ -88,8 +91,7 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                 });
             }
             else{
-                res.writeHead(200, {'Content-Type': 'text/plain'});
-                res.end("Pull Not Authorized");
+                res.send ("Pull Not Authorized");
                 console.log ("\nPull Not Authorized @" + date.toString ());
                 console.log ("	Secret passed in:" + !!(req.query.secret));
                 console.log ("	Secret required:" + !!configData.pullSecret);
@@ -103,16 +105,31 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                 valid_request = (req.query.secret == configData.pullSecret) ? true : false;
             }
             if (valid_request){
-                res.writeHead(200, {'Content-Type': 'text/plain'});
-                res.end("Restarting");
-                setTimeout (function (){
-                    process.exit (0);
-                }, 1000);
+                res.send ("Restarting");
+                process.exit (0);
+            }
+        }
+        else if (req.url.search ("/rebuild") !== -1 && deploy){
+            var valid_request = true;
+            parseURL (req);
+            if (configData.pullSecret){
+                valid_request = (req.query.secret == configData.pullSecret) ? true : false;
+            }
+            if (valid_request){
+
+                // blow away the package.json copy and restart
+                if (config.data.applicationDirectory){
+                    var packageCopy = config.data.applicationDirectory + '/package.copy';
+                    fs.unlinkSync (packageCopy);
+                    res.send ("rebuilding");
+                    process.exit (0); // restart
+                }else{
+                    res.send ("node-aws-deploy is not configured properly");
+                }
             }
         }
         else{
-            res.writeHead(404, {'Content-Type': 'text/plain'});
-            res.end("Not Found");
+            res.send ("Not Found");
         }
     }
     var http_port = (configData.pullPort || 8000), key, cert, options;
