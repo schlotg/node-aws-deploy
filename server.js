@@ -74,19 +74,16 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                             this.end(str);
                         };
                         checkAndUpdateEnvironment (restart, function (){
-                            res.writeHead(200, {'Content-Type': 'text/plain'});
-                            res.end("Pull Accepted");
+                            res.send("Pull Accepted");
                             var date = new Date ();
                             console.log ("\nPull Command, master:" + _master + " @" + date.toString ());
-                            //console.log ("	body:%j", req.body);
                         }, req.query.master, req, res);
                     }
                     else{
                         var msg = "\nIgnoring Pull Request, wrong branch. \n\tListening for: " + listensTo +
                             "\n\t Recieved:" + req.body[pull_field];
                         console.log (msg);
-                        res.writeHead(404, {'Content-Type': 'text/plain'});
-                        res.end("Ignoring Pull Request, wrong branch.");
+                        res.send ("Ignoring Pull Request, wrong branch.");
                     }
                 });
             }
