@@ -69,6 +69,10 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                         }
 
                         var _master = req.query.master;
+                        res.send = function (str){
+                            this.writeHead(404, {'Content-Type': 'text/plain'});
+                            this.end(str);
+                        };
                         checkAndUpdateEnvironment (restart, function (){
                             res.writeHead(200, {'Content-Type': 'text/plain'});
                             res.end("Pull Accepted");
