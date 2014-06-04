@@ -31,6 +31,9 @@
  "pullCa": <array of paths to the certificate authority files> (optional)
  "pullPassphrase" : <string - phrase that the certificate was generated with> (optional if certificate was not generated with a passphrase)
 
+ "logger" : <bool> must be set to false to turn the logger off
+ "logSize": <number> size of the log in bytes. The built in logger limits the size that the log file can be. Default is 64MB, acts as a circular buffer
+
  // This is a secret key that is configured here and passed in via a webhook in
  // response to a pull request. This is to prevent unauthorized requests from causing
  // pulls. If no pull secret is configure then all pull request are valid
@@ -59,21 +62,38 @@
 
 
 
-// create a class to capture stdout
+// create a class to capture stdout. Logs it to the file specified
+// doesn't let the log file grow bigger then the set limit
 function CaptureStdout(callback) {
     var oldWrite = process.stdout.write;
     var fs = require ('fs');
+    var captured = false;
+    var logFile, oldLogFile;
 
     var _interface = {
-        capture: function (verbose, logFile){
-            process.stdout.write = (function(string, encoding, fd) {
-                if (verbose){
-                    oldWrite.apply(process.stdout, arguments);
-                }
-                if (logFile){
-                    fs.appendFile(logFile, string);
-                }
-            };
+        capture: function (verbose, logDirectory, logName, fileSize){
+            if (!captured){
+                try {fs.mkdirSync (logDirectory);}
+                catch (e) {}
+                logFile = logDirectory + '/' + logName + '.log';
+                oldLogFile = logFile + '.old';
+                process.stdout.write = function(string, encoding, fd) {
+                    var size = 0;
+                    if (verbose){
+                        oldWrite.apply(process.stdout, arguments);
+                    }
+                    if (logFile){
+                        fs.appendFile(logFile, string);
+                        try {size = fs.statSync (logFile).size;}
+                        catch (e) {}
+                        if (size > fileSize){
+                            fs.writeFileSync(logFile + '.old', fs.readFileSync(logFile));
+                            fs.writeFileSync(logFile, ''); // clear out the log file
+                        }
+                    }
+                };
+                captured = true;
+            }
         },
         release: function (){
             process.stdout.write = oldWrite;
@@ -81,6 +101,8 @@ function CaptureStdout(callback) {
     };
     return _interface;
 }
+
+var capture = CaptureStdout ();
 
 (function (){
     var fs = require ('fs');
@@ -113,6 +135,7 @@ function CaptureStdout(callback) {
     var appDir;
     var conditionString = config.conditionString;
     var requestRestart = false;
+    var logDirectory;
 
     // post a command out
     function post (_url, body, port, secure, path, cb){
@@ -552,15 +575,7 @@ function CaptureStdout(callback) {
     /////////////////// CODE EXECUTION STARTS HERE ///////////////////////////
     function run (){
         if (cluster.isMaster){
-
             // capture std out so its logged
-            var capture = CaptureStdout ();
-            var logDirectory = configData.applicationDirectory || "";
-            logDirectory += '/logs';
-            try {fs.mkdirSync (logDirectory);}
-            catch (e) {}
-            capture.init (true, 'log');
-
             console.log ("********** Node-Deploy Started *********");
             var date = new Date ();
             console.log (date.toString ());
@@ -570,9 +585,16 @@ function CaptureStdout(callback) {
         // get the app path and the home path
         appDir = (configData && configData.applicationDirectory) || "";
         homePath  = appDir.slice (0, appDir.lastIndexOf ('/'));
-
         // if nor configured this does nothing
         sudo = (configData.sudo) ? "sudo " : "";
+
+        // initialize the logger (Keep the log file fixed size by rolling the results over)
+        var logger = configData && configData.logger;
+        var logSize = (configData && configData.logSize) || 64 * 1024 * 1024; // 64 meg
+        if (logger !== false){
+            logDirectory = appDir + '/logs';
+            capture.capture (true, logDirectory, configData.applicationName, logSize);
+        }
 
         if (cluster.isMaster){
             // init the cloud code
@@ -602,14 +624,9 @@ function CaptureStdout(callback) {
 
                 checkAndUpdateEnvironment (false, function (){
                     //if (updating_on){
-                        server.startServer (instance_data, checkAndUpdateEnvironment, function (){
-                            startApp ();
-                        });
-                    //}
-                    //else{
-                        //console.log ("NO SERVER STARTED");
-                        //startApp ();
-                    //}
+                    server.startServer (instance_data, checkAndUpdateEnvironment, function (){
+                        startApp ();
+                    });
                 }, false);
             });
         }

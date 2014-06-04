@@ -46,8 +46,9 @@ respawn
 respawn limit 99 5
 script
         cd \$APP_PATH
-        sudo mkdir \$APP_PATH/logs/
-        exec sudo nodemon \$APP_PATH/\$ENTRY >> /\$APP_PATH/logs/log 2>&1
+        #sudo mkdir \$APP_PATH/logs/
+        #exec sudo nodemon \$APP_PATH/\$ENTRY >> /\$APP_PATH/logs/log 2>&1
+        exec sudo nodemon \$APP_PATH/\$ENTRY
 end script" >> node-deploy.conf
 sudo chmod 644 node-deploy.conf
 sudo mv node-deploy.conf /etc/init/node-deploy.conf

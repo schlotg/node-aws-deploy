@@ -50,6 +50,36 @@ async.waterfall ([
     },
 
     function (done){
+        if (!local){
+            console.log (++i + ") Would you like to use the node-aws-deploy logger (default = true)");
+            if (configData.logger) {console.log ("Current Value = " + (configData.logger) + " (Press <enter> to keep)");}
+            prompt.get (['(true/false)'], function (err, results){
+                configData.logger = (results['(true/false)'] || configData.logger || true);
+                config.update ();
+                done ();
+            });
+        }
+        else{
+            done ();
+        }
+    },
+
+    function (done){
+        if (!local && configData.logger){
+            console.log (++i + ") Enter a size for the log file in bytes (default is 64MB)");
+            if (configData.logSize) {console.log ("Current Value = " + (configData.logSize) + " (Press <enter> to keep)");}
+            prompt.get (['size'], function (err, results){
+                configData.logSize = (results['size'] || configData.logSize || 64 * 1024 * 1024);
+                config.update ();
+                done ();
+            });
+        }
+        else{
+            done ();
+        }
+    },
+
+    function (done){
         if (local){
             console.log (++i + ") Enter your desired application's full path. (no file names. Example  '/User/me/MyCoolApplication')");
             if (configData.applicationDirectory) {console.log ("Current Value = " + configData.applicationDirectory + " (Press <enter> to keep)");}
