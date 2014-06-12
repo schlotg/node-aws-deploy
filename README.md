@@ -9,10 +9,12 @@ On startup, node-aws-deploy does a git pull of the configured git branch of your
 Next, node-aws-deploy compares the contents of package.json to a local copy. If anything has changed, those packages are removed and re-installed using NPM.
 Finally, node-aws-deploy changes the working directory to your applications folder, then loads and executes the configured .js file that is your applications starting point.
 
-To handle live updates, node-aws-deploy implements a server that listens on a configured port. A webhook can be configured that posts to the node-aws-deploy listener on Git pushes into your repository. Typically, several servers are configured behind a load balancer. The webhook will be dispatched by the load balancer to one of the running servers. The server will find all of the other servers of that same type and forward the webhook along. Every server will do a git pull and then update itself.
-This allows a git branch to be setup that the servers will operate off of. Whenever a deployment needs to happen, a developer simply merges into that branch and pushes. Deployment happens automatically.
+node-aws-deploy also handles project dependencies. If your project consists of several sub projects, you can configure node-aws-deploy to create separate git repositories for each dependency, and then use the NPM link feature to create a symbolic link in the main projects node_modules directory. Each one of the dependency projects will have git pulls and NPM dependency checks performed on them on pull requests or starts.
 
-This is a great way to handle test builds/deployments but may not be the best way to handle production builds. node-aws-deploy relies on your git repository, and the NPM repository being up and running and this introduces more points of failure. A much safer solution for production is to take a working and tested build, create and AMI out of it, set the the user data to {deploy:false} and then update your production scale group with this new AMI.
+To handle live updates, node-aws-deploy implements a server that listens on a configured port. A webhook can be configured that posts to the node-aws-deploy listener on Git pushes into your repository. Typically, several servers are configured behind a load balancer. The webhook will be dispatched by the load balancer to one of the running servers. This server will find all of the other servers of that same type and forward the webhook along. Every server will do a git pull and then update itself.
+This allows a git branch to be setup that the servers will operate off of. Whenever a deployment needs to happen, a developer simply merges into that branch and pushes. Deployment happens automatically. For more control, a developer can run the post pull to all instances an initiate the update when ready. This mechanism also allows feedback from the servers from the pull request.
+
+This is a great way to handle test builds/deployments but may not be the best way to handle production builds. node-aws-deploy relies on your git repository and the NPM repository being up and running and this introduces more points of failure. A much safer solution for production is to take a working and tested build, create and AMI out of it, set the the user data to {deploy:false} and then update your production scale group with this new AMI. node-aws-deploy ships with code for creating AMIs out of tested and running builds.
 
 <Code to build out and AMI from an existing node-aws-deploy build and deploy to a scale group coming soon!>
 
@@ -76,7 +78,7 @@ Install Git and clone the install script:
 
 ###Setting up a AWS Node Server from the node-aws-deploy image
 
-An even easier approach is to create an instance off of the aws-node-deploy image in the Amazon Store
+An even easier approach is to create an instance off of the aws-node-deploy image in the Amazon Store (In Progress)
 
 Create an AWS account http://aws.amazon.com/
 Launch an EC2 instance (Make sure you have downloaded the ssh key/pair so you can connect to your instance). Make sure based off of the node-aws-deploy AMI. Set the user data to:
