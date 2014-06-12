@@ -500,9 +500,7 @@ var capture = CaptureStdout ();
                 }, req, res);
             }, master, req, res);
         }
-        else{
-            cb && cb ();
-        }
+        else {cb && cb ();}
     }
 
     // start the application
