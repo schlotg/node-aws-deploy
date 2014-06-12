@@ -3,6 +3,15 @@ var config = require ("./config").data;
 var async = require ("async");
 var AWS = require ('aws-sdk');
 var EC2;
+var ttys = require('ttys');
+
+var stdin = ttys.stdin;
+var stdout = ttys.stdout;
+
+function moveCursorUp () {
+    ttys.stdout.write('\033[1A\r');
+}
+
 
 // Pass in the instance data that you want to post to, should be in the form of a json string
 var instance_data = process.argv[2];
@@ -115,6 +124,8 @@ if (!error){
                 }
                 else{
                     console.log ("Image creation in progress. Data:%j", image);
+                    console.log ('.');
+                    var progress = '.';
                     function pollAMI () {
                         function poll (){
                             EC2.describeImages ({ImageIds:[image.ImageId]}, function (err, imageData){
@@ -122,10 +133,11 @@ if (!error){
                                     console.log ('err:%j', err);
                                 }
                                 else{
-                                    console.log ('imageData:%j', imageData);
                                     var imageState = imageData.Images[0] && imageData.Images[0].State;
                                     if (imageState === 'pending'){
-                                        console.log ('.');
+                                        moveCursorUp ();
+                                        progress += '.';
+                                        console.log (progress);
                                         pollAMI ();
                                     }
                                     else{
