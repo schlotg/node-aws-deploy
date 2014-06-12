@@ -3,15 +3,11 @@ var config = require ("./config").data;
 var async = require ("async");
 var AWS = require ('aws-sdk');
 var EC2;
-var ttys = require('ttys');
 
-var stdin = ttys.stdin;
-var stdout = ttys.stdout;
-
+// move the cursor up one line
 function moveCursorUp () {
-    ttys.stdout.write('\033[1A\r');
+    process.stdout.write('\033[1A\r');
 }
-
 
 // Pass in the instance data that you want to post to, should be in the form of a json string
 var instance_data = process.argv[2];
