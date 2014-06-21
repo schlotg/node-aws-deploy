@@ -15,9 +15,9 @@
  echo "Do you want to delete the old instances after deployment? (yes/no)"
  read removeOldInstances
  if [ "$removeOldInstances" = "yes" ]; then
- removeOldInstances=true
+    removeOldInstances=true
  else
- removeOldInstances=false
+    removeOldInstances=false
  fi
 
  params="{\"amiId\":\"$amiId\",\"loadBalancerName\":\"$loadBalancerName\",\"deploymentName\":\"$deploymentName\",\"deploymentVersion\":\"$deploymentVersion\",\"removeOldInstances\":$removeOldInstances}"

@@ -1,4 +1,31 @@
-// Simple file to simulate a webhook
+/*
+    Post commands to the node-aws-deploy server
+    Finds all running instances and issues the command.
+    Currently the node-aws-deploy server supports the following commands '/pull', '/restart' and '/rebuild'
+    commands. Specify the the type, route, and arguments.
+
+    This code finds all the servers that have user data that matches the
+    type passed in and issues the command to them.
+
+    Additionally the /pull command allows you to specify additional arguments that are set on the command line.
+    These are stored in the .app-config.json and are applied to the instances every time they restart. This is useful
+    for passing up version info, app-cache dates, etc...
+
+    // example shell script for pulling:
+
+         cd your_application_directory/node-aws-deploy
+         echo Enter type:
+         read type
+         echo Enter the version:
+         read version
+         dateTime=$(date +"%m-%d-%y %T")
+         route="/pull"
+         args="{\"version\":\"$version\",\"appCacheDate\":\"$dateTime\"}"
+         params="{\"type\":\"$type\",\"listensTo\":\"master\",\"secure\":false}"
+         echo -e "\nSignaling Servers to Pull. Waiting for server response...\n"
+         node postToAllInstances.js $route $params $args
+ */
+
 var local_path =  (require.resolve ("./cloud.js")).replace ("cloud.js", "");
 var config = require ("./config").data;
 var https = require ("https");
@@ -6,16 +33,32 @@ var http = require ("http");
 var cloud = require ("./cloud.js");
 var async = require ("async");
 
-// Pass in the instance data that you want to post to, should be in the form of a json string
-var instance_data = process.argv[2];
-// pass in command line params we want to set. Useful for app-cache time stamps and versions
-var args = process.argv[3];
+// pass in the route, defaults to '/pull'. Can be '/pull', '/restart' or '/rebuild'
+var route = process.argv[2];
+if (!route){
+    console.log ("No route is specified");
+    process.exit (1);
+}
 
-try {args = JSON.parse (args);}
-catch (e){ args = []; console.log (e);}
+// Pass in the instance type params (JSON)
+var instance_data = process.argv[3];
+if (instance_data){
+    try {instance_data = JSON.parse (instance_data);}
+    catch (e){console.log ("Error parsing instance type JSON: %j", e);}
+}
+if (!instance_data){
+    console.log ("No instance type is specified");
+    process.exit (1);
+}
 
-try {instance_data = JSON.parse (instance_data);}
-catch (err){}
+// optional command line params we want to set. Should be in the form of a JSON string. Useful for app-cache time stamps
+// and versions, etc...
+var args = process.argv[4];
+if (args){
+    try {args = JSON.parse (args);}
+    catch (e){console.log ("Error parsing args JSON: %j", e);}
+}
+args = args || {};
 
 // post a command out
 function post (url, body, port, secure, path, cb){
@@ -61,7 +104,7 @@ cloud.init (function (){
     var key = config.pullField || "ref";
     var branch = instance_data.listensTo || config.pullBranch;
     var secure = (config.appURL.search ("https://") !== -1);
-    var path = "/pull?";
+    var path = route + "?";
     if (config.pullSecret) {path += "secret=" + config.pullSecret + "&";}
     path += "master=false";
     if (instance_data && (instance_data.secure !== undefined || instance_data.secure !== null)){
@@ -82,10 +125,9 @@ cloud.init (function (){
                     if (instance.dns){
                         console.log ("Posting to: " + instance.dns + " waiting for result...");
                         post (instance.dns, body, config.pullPort, secure, path, function (err, result){
-                            console.log ("\nPosted pull to:" + instance.dns);
+                            console.log ("\nPosted " + route + " to:" + instance.dns);
                             console.log ("\tport:" + config.pullPort);
                             console.log ("\tsecure:" + secure);
-                            console.log ("\tpath:" + path);
                             console.log ("\tbody:%j", body);
                             if (err){console.log ("\n\tError:" + err);}
                             else{console.log ("\n\tResult:" + result);}
@@ -103,6 +145,6 @@ cloud.init (function (){
     }
     else{
         console.log ("Error posting to instances, instance data json string no passed in or corrupt");
-        process.exit (0);
+        process.exit (1);
     }
 });

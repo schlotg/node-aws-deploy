@@ -1,4 +1,8 @@
 #######################################################################################
+# Installs Node.js, node-aws-delpoy, and launches the install scripts to configure your
+# Node.js application on AWS. This should be executed in ssh connected to an AWS ec2
+# instance.
+#
 # Before you run this do the following:
 #	sudo su
 #	vi /etc/sudoers

@@ -7,7 +7,7 @@ var qs = require ('querystring');
 var secure_post = false;
 var pull_field = configData.pullField || "ref";
 var restart = false;
-var POST_MESSAGE_SIZE = 65536;
+var POST_MESSAGE_SIZE = 65536; // limit the most someone can post to 64k
 var deploy = false;
 var fs = require('fs');
 
@@ -92,10 +92,7 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
             }
             else{
                 res.send ("Pull Not Authorized");
-                console.log ("\nPull Not Authorized @" + date.toString ());
-                console.log ("	Secret passed in:" + !!(req.query.secret));
-                console.log ("	Secret required:" + !!configData.pullSecret);
-                console.log ("	Secrets Match:" + (configData.pullSecret === req.query.secret));
+                console.log ("\nPull Not Authorized");
             }
         }
         else if (req.url.search ("/restart") !== -1){
@@ -106,7 +103,12 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
             }
             if (valid_request){
                 res.send ("Restarting");
+                console.log ("\nRestart command received. Restarting...");
                 process.exit (0);
+            }
+            else {
+                res.send ("Restart Not Authorized");
+                console.log ("\nRestart Not Authorized");
             }
         }
         else if (req.url.search ("/rebuild") !== -1 && deploy){
@@ -121,15 +123,21 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                 if (config.data.applicationDirectory){
                     var packageCopy = config.data.applicationDirectory + '/package.copy';
                     fs.unlinkSync (packageCopy);
-                    res.send ("rebuilding");
+                    res.send ("Rebuilding");
+                    console.log ("\nRebuild command received. Rebuilding...");
                     process.exit (0); // restart
                 }else{
                     res.send ("node-aws-deploy is not configured properly");
                 }
             }
+            else{
+                res.send ("Rebuild Not Authorized");
+                console.log ("\nRebuild Not Authorized");
+            }
         }
         else{
-            res.send ("Not Found");
+            res.send ("Unrecognized command");
+            console.log ("\nUnrecognized command");
         }
     }
     var http_port = (configData.pullPort || 8000), key, cert, options;
