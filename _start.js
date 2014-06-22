@@ -220,6 +220,9 @@ var capture = CaptureStdout ();
                         }
                         process.exit(0);
                     }
+                    else{
+                        res && res.send('Pull Successful! Already up to date');
+                    }
                     cb && cb ();
                 });
             }
