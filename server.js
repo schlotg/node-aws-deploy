@@ -11,6 +11,15 @@ var POST_MESSAGE_SIZE = 65536; // limit the most someone can post to 64k
 var deploy = false;
 var fs = require('fs');
 
+// this function restarts the application
+function restart (code){
+    code = code || 0;
+    console.log ("Restarting the app. If you launched this manually you will have to re-launch manually");
+    setTimeout (function (){
+        process.exit (code);
+    }, 1000);
+}
+
 // start up our pull server
 function startServer (instance_data, checkAndUpdateEnvironment, cb){
     deploy = instance_data && instance_data.deploy;
@@ -104,7 +113,7 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
             if (valid_request){
                 res.send ("Restarting");
                 console.log ("\nRestart command received. Restarting...");
-                process.exit (0);
+                restart (0);
             }
             else {
                 res.send ("Restart Not Authorized");
@@ -125,7 +134,7 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                     fs.unlinkSync (packageCopy);
                     res.send ("Rebuilding");
                     console.log ("\nRebuild command received. Rebuilding...");
-                    process.exit (0); // restart
+                    restart (0); // restart
                 }else{
                     res.send ("node-aws-deploy is not configured properly");
                 }

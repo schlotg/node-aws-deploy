@@ -26,6 +26,14 @@
          node postToAllInstances.js $route $params $args
  */
 
+// this function exits but allows time for things to get flushed.
+function exit (code){
+    code = code || 0;
+    setTimeout (function (){
+        process.exit (code);
+    }, 1000);
+}
+
 var local_path =  (require.resolve ("./cloud.js")).replace ("cloud.js", "");
 var config = require ("./config").data;
 var https = require ("https");
@@ -37,7 +45,7 @@ var async = require ("async");
 var route = process.argv[2];
 if (!route){
     console.log ("No route is specified");
-    process.exit (1);
+    exit (1);
 }
 
 // Pass in the instance type params (JSON)
@@ -48,7 +56,7 @@ if (instance_data){
 }
 if (!instance_data){
     console.log ("No instance type is specified");
-    process.exit (1);
+    exit (1);
 }
 
 // optional command line params we want to set. Should be in the form of a JSON string. Useful for app-cache time stamps
@@ -135,16 +143,16 @@ cloud.init (function (){
                         });
                     }
                     else {cb ();}
-                }, function () {process.exit (0);});
+                }, function () {exit (0);});
             }
             else{
                 console.log ("No instances found");
-                process.exit (0);
+                exit (0);
             }
         });
     }
     else{
         console.log ("Error posting to instances, instance data json string no passed in or corrupt");
-        process.exit (1);
+        exit (1);
     }
 });
