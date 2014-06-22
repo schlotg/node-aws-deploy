@@ -63,7 +63,7 @@
 
 
 // this function restarts the application
-function restart (code){
+function exit (code){
     code = code || 0;
     console.log ("Restarting the app. If you launched this manually you will have to re-launch manually");
     setTimeout (function (){
@@ -227,7 +227,7 @@ var capture = CaptureStdout ();
                         else{
                             res && res.send('Pull Successful!, restarting');
                         }
-                        restart (0); // restart
+                        exit (0); // restart
                     }
                     else{
                         res && res.send('Pull Successful! Already up to date');
@@ -296,7 +296,7 @@ var capture = CaptureStdout ();
                     else{
                         console.log ("		Node upgrade success, restarting");
                         res && res.send ("Upgraded Node, restarting");
-                        restart (0); // exit so we get restarted
+                        exit (0); // exit so we get restarted
                     }
                     cb & cb ();
                 });
