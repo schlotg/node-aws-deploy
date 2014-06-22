@@ -218,7 +218,7 @@ var capture = CaptureStdout ();
                         else{
                             res && res.send('Pull Successful!, restarting');
                         }
-                        process.exit(0);
+                        process.exit(0); // restart
                     }
                     else{
                         res && res.send('Pull Successful! Already up to date');
