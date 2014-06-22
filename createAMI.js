@@ -1,4 +1,4 @@
-var local_path =  (require.resolve ("./makeAMI.js")).replace ("makeAMI.js", "");
+var local_path =  (require.resolve ("./createAMI.js")).replace ("createAMI.js", "");
 var config = require ("./config").data;
 var async = require ("async");
 var AWS = require ('aws-sdk');
