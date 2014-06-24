@@ -18,7 +18,7 @@
          read type
          echo Enter the version:
          read version
-         dateTime=$(date +"%m-%d-%y %T")
+         dateTime=$(date +"%m-%d-%y%T")
          route="/pull"
          args="{\"version\":\"$version\",\"appCacheDate\":\"$dateTime\"}"
          params="{\"type\":\"$type\",\"listensTo\":\"master\",\"secure\":false}"

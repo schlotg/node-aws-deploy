@@ -223,7 +223,7 @@ function createScaleGroup (params, cb){
                 }
             }
             configParams.LaunchConfigurationName = params.LaunchConfigurationName;
-            configParams.AutoScalingGroupName = params.args.deploymentName + '-sg-' + params.args.deploymentVersion;
+            configParams.AutoScalingGroupName = params.args.deploymentName + '-asg-' + params.args.deploymentVersion;
             configParams.Tags[0].ResourceId = configParams.AutoScalingGroupName;
 
             AUTO.createAutoScalingGroup (configParams, function (err, data){
