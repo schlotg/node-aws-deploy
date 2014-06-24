@@ -8,3 +8,4 @@ tmp_files/*
 dump/*
 app-config.json
 .app-config.json
+private/*
