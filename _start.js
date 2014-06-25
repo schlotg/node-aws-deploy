@@ -66,6 +66,7 @@
 function exit (code){
     code = code || 0;
     console.log ("Restarting the app. If you launched this manually you will have to re-launch manually");
+    console.log ("\tWhen running with upstart, upstart will automatically restart the app");
     setTimeout (function (){
         process.exit (code);
     }, 1000);
@@ -122,11 +123,6 @@ var capture = CaptureStdout ();
     var config = require ('./config');
     var server = require ('./server');
     var configData = config.data;
-
-    /*if (configData.data){
-     configData = configData.data;
-     config.update ();
-     }*/
 
     var error, pull_error = "";
     var package_json, package_copy, parsed_package, parsed_copy;
@@ -198,8 +194,9 @@ var capture = CaptureStdout ();
             console.log ("Pulling the latest code from remote repository");
             async.eachSeries (pull_list, function (proj, cb){
                 // get the latest code
-                console.log ("\tPulling " + proj);
-                var child = exec ("cd " + proj + " ; " + sudo + "git pull", function (err, std, ster){
+                console.log ("\tPulling " + proj + " on branch:" + configData.pullBranch);
+                var checkoutStr = (configData && configData.pullBranch) ? sudo + "checkout ; " + configData.pullBranch : '';
+                var child = exec ("cd " + proj + " ; " + checkoutStr +  sudo + "git pull", function (err, std, ster){
                     if (err){
                         console.log ("\t\tError pulling repository. Error" + ster);
                         pull_error += "\t\tError pulling repository. Error" + ster;
@@ -598,6 +595,11 @@ var capture = CaptureStdout ();
         // get the app path and the home path
         appDir = (configData && configData.applicationDirectory) || "";
         homePath  = appDir.slice (0, appDir.lastIndexOf ('/'));
+        if (configData){
+            configData.homePath = homePath; // store off the home path everytime
+            config.update ();
+        }
+
         // if nor configured this does nothing
         sudo = (configData.sudo) ? "sudo " : "";
 

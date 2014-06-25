@@ -131,7 +131,16 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                 // blow away the package.json copy and restart
                 if (config.data.applicationDirectory){
                     var packageCopy = config.data.applicationDirectory + '/package.copy';
-                    fs.unlinkSync (packageCopy);
+                    try {fs.unlinkSync (packageCopy);}
+                    catch (e){}
+                    // now blow away all the dependency package.copy files
+                    if (configData.dependencies && configData.homePath){
+                        configData.dependencies.forEach (function (dependency){
+                            packageCopy = configData.homePath + "/" + dependency + "/package.copy";
+                            try {fs.unlinkSync (packageCopy);}
+                            catch (e){}
+                        });
+                    }
                     res.send ("Rebuilding");
                     console.log ("\nRebuild command received. Rebuilding...");
                     restart (0); // restart
