@@ -425,7 +425,7 @@ async.waterfall ([
 
 ], function (err){
     if (!err){
-        updateConfig ();
+        config.update ();
         console.log ("Successfully installed: " + configData.applicationName + ". The Configuration has been written out to '.app-config.json' in ~/node-aws-deploy, " +
             "The settings can always be changed by manually editing the '.app-config.json' file.");
         if (!local){
