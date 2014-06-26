@@ -26,7 +26,7 @@ async.waterfall ([
         console.log (++i + ") Is this a 'remote' install? (If this is on a remote server the answer is y) (y/n)");
         if (configData.applicationDirectory) {console.log ("Current Value = " + configData.remote + " (Press <enter> to keep)");}
         prompt.get (['(y/n)'], function (err, results){
-            configData.remote = (results['(y/n)'] || config.remote || 'n');
+            configData.remote = (results['(y/n)'] || configData.remote || 'n');
             local = (configData.remote === 'n');
             configData.sudo = (local) ? "" : "sudo";
             config.update ();
@@ -262,7 +262,7 @@ async.waterfall ([
             if (configData.pullBranch) {console.log ("\t\tCurrent Value = " + configData.pullBranch + " (Press <enter> to keep)");}
             console.log ("\t pullField: <the field that contains the branch info in the webhook post requests> (defaults to 'ref'))");
             if (configData.pullField) {console.log ("\t\tCurrent Value = " + configData.pullField + " (Press <enter> to keep)");}
-            else {config.pullField = 'ref';}
+            else {configData.pullField = 'ref';}
             if (configData.appEnvironmentVariables) {console.log ("Current Value = " + configData.appEnvironmentVariables + " (Press <enter> to keep)");}
             prompt.get (["pullPort", "pullSecret", "pullBranch", "pullField"], function (err, results){
                 for (var k in results){
@@ -354,7 +354,7 @@ async.waterfall ([
                     if (!local){
                         // grab the package.json file so we can look up these dependencies
                         var package_json;
-                        try { package_json = require (config.applicationDirectory + "/package.json");}
+                        try { package_json = require (configData.applicationDirectory + "/package.json");}
                         catch (e) {console.log ("Unable to find the applications package.json. Error:" + e);}
                         if (package_json){
 
@@ -425,7 +425,7 @@ async.waterfall ([
 
 ], function (err){
     if (!err){
-        updateConfig ();
+        config.update ();
         console.log ("Successfully installed: " + configData.applicationName + ". The Configuration has been written out to '.app-config.json' in ~/node-aws-deploy, " +
             "The settings can always be changed by manually editing the '.app-config.json' file.");
         if (!local){

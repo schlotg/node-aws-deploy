@@ -1,11 +1,15 @@
 Node AWS Deploy
 =====
-This is my attempt at an easy to use and robust deployment and install system to get your Node app up and running, quickly and easily on AWS. node-aws-deploy is designed to take a web hook HTTP post from a Git repository service and then automatically trigger a deployment across multiple servers. New servers that are started up will automatically grab the latest changes.
-node-aws-deploy sits outside your application so it doesn't clutter up your code base. It relies heavily on the package.json file so your application must have one to work properly.
+This is my attempt at an easy to use and robust deployment and install system to get your Node app up and running, quickly and easily on AWS.
+node-aws-deploy is designed to take a web hook HTTP post from a Git repository service or a post generated on a development machine; and then automatically
+trigger a deployment across a single or multiple server instances. New servers that are started up will automatically grab the latest changes.
+node-aws-deploy typically sits outside your application to avoid clutter but in can live within your application directory just a easily.
 
 ##How it works
-node-aws-deploy has install scripts that install 'Node', 'n', and 'node-aws-deploy'. node-aws-deploy uses upstart to launch node-aws-deploy on server startup, and relaunch if your application dies.
-On startup, node-aws-deploy does a git pull of the configured git branch of your remote git repository. It then checks the node version specified in package.json. This is specified in the 'nodeVersion' field which is ignored by NPM. If the node version specified in package.json does not match the current node version, node-aws-deploy uses 'n' to switch versions to the one specified. If Nodejs is changed to a different version, the system is restarted.
+node-aws-deploy has install scripts that install 'Node', 'n', and 'node-aws-deploy'. node-aws-deploy uses upstart to launch node-aws-deploy on server startup, and
+relaunch if your application dies. On startup, node-aws-deploy does a git pull of the configured git branch of your remote git repository. It then checks the node
+version specified in package.json. This is specified in the 'nodeVersion' field which is ignored by NPM. If the node version specified in package.json does not
+match the current node version, node-aws-deploy uses 'n' to switch versions to the one specified. If Nodejs is changed to a different version, the system is restarted.
 Next, node-aws-deploy compares the contents of package.json to a local copy. If anything has changed, those packages are removed and re-installed using NPM.
 Finally, node-aws-deploy changes the working directory to your applications folder, then loads and executes the configured .js file that is your applications starting point.
 
