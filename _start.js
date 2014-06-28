@@ -195,8 +195,8 @@ var capture = CaptureStdout ();
             async.eachSeries (pull_list, function (proj, cb){
                 // get the latest code
                 console.log ("\tPulling " + proj + " on branch:" + configData.pullBranch);
-                var checkoutStr = (configData && configData.pullBranch) ? sudo + "checkout ; " + configData.pullBranch : '';
-                var child = exec ("cd " + proj + " ; " + checkoutStr +  sudo + "git pull", function (err, std, ster){
+                var checkoutStr = (configData && configData.pullBranch) ? sudo + " checkout " + configData.pullBranch + " ; " : '';
+                var child = exec ("cd " + proj + " ; " + checkoutStr +  sudo + " git pull", function (err, std, ster){
                     if (err){
                         console.log ("\t\tError pulling repository. Error" + ster);
                         pull_error += "\t\tError pulling repository. Error" + ster;
