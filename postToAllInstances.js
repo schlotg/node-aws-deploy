@@ -18,7 +18,7 @@
          read type
          echo Enter the version:
          read version
-         dateTime=$(date +"%m-%d-%y%-T")
+         dateTime=$(date +"%m-%d-%y%_T")
          route="/pull"
          args="{\"version\":\"$version\",\"appCacheDate\":\"$dateTime\"}"
          params="{\"type\":\"$type\",\"listensTo\":\"master\",\"secure\":true}"
@@ -64,7 +64,10 @@ if (!instance_data){
 var args = process.argv[4];
 if (args){
     try {args = JSON.parse (args);}
-    catch (e){console.log ("Error parsing args JSON: %j", e);}
+    catch (e){
+        console.log ("Params are not a JSON. Assuming a a string");
+        args = process.argv[4]
+    }
 }
 args = args || {};
 
@@ -120,7 +123,12 @@ cloud.init (function (){
     }
 
     // grab any params passed as a JSON and set them in the body
-    body.args = JSON.stringify(args);
+    if (typeof body.args === "object"){
+        body.args = JSON.stringify(args);
+    }
+    else{
+        body.args = args;
+    }
     body[key] = branch;
 
     if (instance_data){

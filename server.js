@@ -70,11 +70,16 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                             if (args){ // only save these out if we have new ones
                                 restart = false;
                                 console.log ("\tApplying pullArgs:%j", args);
-                                configData.pullArgs = configData.pullArgs || {};
-                                for (var k in args){
-                                    if (configData.pullArgs[k] !== args[k]){
-                                        configData.pullArgs[k] = args[k];
-                                        restart = true;
+                                if (typeof args === 'string'){
+                                    configData.pullArgs = args;
+                                }
+                                else{
+                                    configData.pullArgs = configData.pullArgs || {};
+                                    for (var k in args){
+                                        if (configData.pullArgs[k] !== args[k]){
+                                            configData.pullArgs[k] = args[k];
+                                            restart = true;
+                                        }
                                     }
                                 }
                                 config.update ();
