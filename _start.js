@@ -525,7 +525,7 @@ var capture = CaptureStdout ();
                 if (typeof configData.commandArguments === 'object'){
                     var type = instanceData && instanceData.type;
                     args = configData.commandArguments[type] || [];
-                    process.argv.push (arg);
+                    process.argv.push (args);
                 }else {
                     args = configData.commandArguments.split (" ") || [];
                     args && args.forEach (function (arg){
