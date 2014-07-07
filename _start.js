@@ -524,8 +524,11 @@ var capture = CaptureStdout ();
                 var args;
                 if (typeof configData.commandArguments === 'object'){
                     var type = instanceData && instanceData.type;
-                    args = configData.commandArguments[type] || [];
-                    process.argv.push (args);
+                    args = configData.commandArguments[type] || "";
+                    args = args.split (" ");
+                    args && args.forEach (function (arg){
+                        process.argv.push (arg);
+                    });
                 }else {
                     args = configData.commandArguments.split (" ") || [];
                     args && args.forEach (function (arg){
