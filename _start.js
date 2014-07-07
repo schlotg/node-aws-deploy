@@ -515,11 +515,28 @@ var capture = CaptureStdout ();
     // start the application
     function startApp (){
         // set command line args
+        var instanceData = cloud.getInstanceData ();
         if (configData.commandArguments || configData.pullArgs){
             if (configData.commandArguments){
-                var args = configData.commandArguments.split (" ");
+                var args;
+                if (typeof configData.commandArguments === 'object'){
+                    var type = instanceData && instanceData.type;
+                    args = configData.commandArguments[type] || [];
+                }else {
+                    args = configData.commandArguments.split (" ") || [];
+                }
                 if (cluster.isMaster){ // only output this info once
-                    console.log ("Set the following Command Line Arguments:\n\t" + configData.commandArguments);
+                    console.log ("Set the following Command Line Arguments:\n\t" + args.toString ());
+                }
+                args && args.forEach (function (arg){
+                    process.argv.push (arg);
+                });
+            }
+            // set the pull args, but only if it is a string object
+            if (configData.pullArgs && typeof configData.pullArgs === "string"){
+                args = configData.pullArgs.split (" ") || [];
+                if (cluster.isMaster){ // only output this info once
+                    console.log ("Set the following Pull Arguments:\n\t" + args.toString ());
                 }
                 args && args.forEach (function (arg){
                     process.argv.push (arg);
@@ -529,7 +546,6 @@ var capture = CaptureStdout ();
         else if (cluster.isMaster) {
             console.log ("No Command Line Arguments set!");
         }
-
 
         // set environment variables
         if (configData.appEnvironmentVariables){
