@@ -24,7 +24,15 @@
          params="{\"type\":\"$type\",\"listensTo\":\"master\",\"secure\":true}"
          echo -e "\nSignaling Servers to Pull. Waiting for server response...\n"
          node postToAllInstances.js $route $params $args
- */
+
+    The args parameter can also be a string instead of a JSON. Example:
+        args="--version=$version --appCacheDate=$dateTime"
+
+    This is handy if you just want to apply the pull arguments in addition to the regular command line arguments. If this
+    second method is used (args are a string and not a JSON) they will be applied as command line parameters automatically
+    when the app starts up. If they are a JSON then it is up to the developer to do something with them in his preload.json
+    script.
+*/
 
 // this function exits but allows time for things to get flushed.
 function exit (code){

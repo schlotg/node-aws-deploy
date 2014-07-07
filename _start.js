@@ -15,7 +15,10 @@
  "applicationDirectory": <set this to the directory you application lives in>
  "applicationPath": <the path to the application directory>
  "appEntry": <set this to the name of the 'js' file that is your entry point>
- "commandArguments": <command line arguments you would like pass to the application>
+ "commandArguments": <command line arguments you would like pass to the application. The can be key'd object for different deployment types or just a string:>
+    example: {"developent":"-port=80", "production":"--port=443"}
+                    or
+    example: "-port=80"
  "appEnvironmentVariables": <{<key>:<pair>}, key pair environment variables that need to be se for the application >
  "appURL": <https://myapp> used for manual webhooks
  "dependencies" : <dependencies within the package.json that need to be pulled in addition to the application directory>
@@ -522,15 +525,16 @@ var capture = CaptureStdout ();
                 if (typeof configData.commandArguments === 'object'){
                     var type = instanceData && instanceData.type;
                     args = configData.commandArguments[type] || [];
+                    process.argv.push (arg);
                 }else {
                     args = configData.commandArguments.split (" ") || [];
+                    args && args.forEach (function (arg){
+                        process.argv.push (arg);
+                    });
                 }
                 if (cluster.isMaster){ // only output this info once
                     console.log ("Set the following Command Line Arguments:\n\t" + args.toString ());
                 }
-                args && args.forEach (function (arg){
-                    process.argv.push (arg);
-                });
             }
             // set the pull args, but only if it is a string object
             if (configData.pullArgs && typeof configData.pullArgs === "string"){
