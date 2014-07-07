@@ -533,8 +533,6 @@ var capture = CaptureStdout ();
                 });
             }
             // set the pull args, but only if it is a string object
-console.log ("PUUUULLLL AAARRGGS:");
-console.log (configData.pullArgs);
             if (configData.pullArgs && typeof configData.pullArgs === "string"){
                 args = configData.pullArgs.split (" ") || [];
                 if (cluster.isMaster){ // only output this info once
