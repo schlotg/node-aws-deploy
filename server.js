@@ -71,7 +71,10 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                                 restart = false;
                                 console.log ("\tApplying pullArgs:%j", args);
                                 if (typeof args === 'string'){
-                                    configData.pullArgs = args;
+				                    if (configData.pullArgs !== args){
+                                    	configData.pullArgs = args;
+					                    restart = true;
+				                    }
                                 }
                                 else{
                                     configData.pullArgs = configData.pullArgs || {};
