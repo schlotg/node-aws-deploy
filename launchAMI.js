@@ -243,7 +243,7 @@ function getNewScaleGroup (params, cb){
     if (AUTO){
         var scaleGroupName = params.AutoScalingGroupName;
         var dots = '';
-        console.log ("Finding New Scale Group: " + scaleGroupName);
+        console.log ("Finding New Scale Group: " + scaleGroupName + "\n");
         function _getNewScaleGroup () {
             AUTO.describeAutoScalingGroups ({AutoScalingGroupNames:[scaleGroupName]}, function (error, data){
                 if (error) { cb && cb (error);}
@@ -277,7 +277,7 @@ function areInstancesReady (params, cb){
     ELB = params.AWS && new params.AWS.ELB();
     if (ELB){
         if (params.loadBalancerName){
-            console.log ("Checking that the new instances are ready. This might take a few minutes");
+            console.log ("Checking that the new instances are ready. This might take a few minutes \n");
             var dots = '';
             function describeInstanceHealth (){
                 ELB.describeInstanceHealth({LoadBalancerName: params.loadBalancerName}, function( error, data) {
