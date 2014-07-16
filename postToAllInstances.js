@@ -71,6 +71,10 @@ if (!instance_data){
 // and versions, etc...
 var args = process.argv[4];
 if (args){
+    if (args.slice (0,1) === '"'){
+        args = args.slice (0,1).slice (0,-1);
+    }
+    args = args.replace ('\\"', '"');
     try {args = JSON.parse (args);}
     catch (e){
         console.log ("Params are not a JSON. Assuming a a string");
