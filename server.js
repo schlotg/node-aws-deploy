@@ -40,6 +40,7 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                     }
                 });
                 req.on('end', function () {
+console.log ("post data:" + body);
                     try{req.body = JSON.parse (body);}
                     catch (e){req.body = qs.parse (body);}
                     if (func){func (req, res);}
