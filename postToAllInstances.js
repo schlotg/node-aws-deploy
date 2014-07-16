@@ -131,7 +131,7 @@ cloud.init (function (){
     }
 
     // grab any params passed as a JSON and set them in the body
-    if (typeof body.args === "object"){
+    if (typeof args === "object"){
         body.args = JSON.stringify(args);
     }
     else{
