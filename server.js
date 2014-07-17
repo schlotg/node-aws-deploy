@@ -6,7 +6,6 @@ var https = require('https');
 var qs = require ('querystring');
 var secure_post = false;
 var pull_field = configData.pullField || "ref";
-var restart = false;
 var POST_MESSAGE_SIZE = 65536; // limit the most someone can post to 64k
 var deploy = false;
 var fs = require('fs');
@@ -59,6 +58,7 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
             }
             if (valid_request){
                 bodyParser (req, res, function (){
+                    var _restart = false;
                     var listensTo = (instance_data && instance_data.listensTo) ? instance_data.listensTo : "";
                     req.body[pull_field] = req.body[pull_field] || "";
                     if (req.body[pull_field].search (listensTo) !== -1){
@@ -68,12 +68,12 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                             catch (e){}
                             args = args || req.body.args;
                             if (args){ // only save these out if we have new ones
-                                restart = false;
+                                _restart = false;
                                 console.log ("\tApplying pullArgs:%j", args);
                                 if (typeof args === 'string'){
 				                    if (configData.pullArgs !== args){
                                     	configData.pullArgs = args;
-					                    restart = true;
+                                        _restart = true;
 				                    }
                                 }
                                 else{
@@ -81,7 +81,7 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                                     for (var k in args){
                                         if (configData.pullArgs[k] !== args[k]){
                                             configData.pullArgs[k] = args[k];
-                                            restart = true;
+                                            _restart = true;
                                         }
                                     }
                                 }
@@ -93,11 +93,11 @@ function startServer (instance_data, checkAndUpdateEnvironment, cb){
                         }
 
                         var _master = req.query.master;
-                        checkAndUpdateEnvironment (restart, function (){
+                        checkAndUpdateEnvironment (_restart, function (){
                             res.send("Pull Accepted");
                             var date = new Date ();
                             console.log ("\nPull Command, master:" + _master + " @" + date.toString ());
-                        }, req.query.master, req, res);
+                        }, req.query.master, req, res, true);
                     }
                     else{
                         var msg = "\nIgnoring Pull Request, wrong branch. \n\tListening for: " + listensTo +

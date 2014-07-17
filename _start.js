@@ -54,6 +54,8 @@
 
  "sudo": <Mac and Linux only, should we prefix all shell commands with sudo?> - defaults to no sudo
 
+ "noPullOnRestart": <true false> - if true and deploy=true pulls only on the pull command and not on restarts or starts
+
  // This file must conform the following interface: It must have a start function that is exported that excepts a callback
  // as a parameter and calls the callback when compete to start the application.
  "preLaunch": <a javascript file to execute relative to the application directory before starting the app>
@@ -497,9 +499,9 @@ var capture = CaptureStdout ();
         });
     }
 
-    function checkAndUpdateEnvironment (_requestRestart, cb, master, req, res){
+    function checkAndUpdateEnvironment (_requestRestart, cb, master, req, res, pullRequestIssued){
         requestRestart = _requestRestart;
-        if (updating_on || configData.remote === 'n'){
+        if (updating_on || configData.remote === 'n' || pullRequestIssued){
             // get the latest code
             pull (function (){
                 // check for dependency changes
@@ -643,7 +645,7 @@ var capture = CaptureStdout ();
                 console.log ("  Instance Data:%j", instance_data);
 
                 // see if updating should be on or off
-                if (instance_data && instance_data.deploy === true){
+                if (instance_data && instance_data.deploy === true && configData && !configData.noPullOnRestart){
                     updating_on = true;
                 }
 
