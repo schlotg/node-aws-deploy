@@ -321,8 +321,10 @@ async.waterfall ([
                                 configData.applicationDirectory = home_path + dir;
                             }
                             console.log ("Configuring the branch and pulling all dependencies....");
-                            child = exec ('cd ' + configData.applicationDirectory + ' ; ' + configData.sudo + ' git checkout ' + configData.pullBranch +
-                                ' ; ' + configData.sudo + ' npm install -d ; sudo mkdir logs ; sudo chmod 755 logs', function (err, std, ster){
+                            var cmdString = 'cd ' + configData.applicationDirectory + ' ; ' + configData.sudo + ' git checkout ' + configData.pullBranch +
+                                ' ; ' + configData.sudo + ' npm install -d ; sudo mkdir logs ; sudo chmod 755 logs';
+                            console.log("command string = " +cmdString);
+                            child = exec (cmdString, function (err, std, ster){
                                 console.log (std);
                                 done ();
                             });
@@ -373,8 +375,10 @@ async.waterfall ([
                                     // reformat the repositories so git understands them
                                     repo = repo.replace ("git://", "https://").replace ("git+ssh://", "");
                                     console.log ("Cloning " + proj + " @ " + repo + " into " +  configData.applicationPath + proj);
-                                    var child = exec (" cd " + configData.applicationPath + " ; sudo git clone " + repo + " ; cd "
-                                        +  configData.applicationPath + "/" + proj + " ; sudo npm link ", function (err, std, ster){
+                                    var cmdString = " cd " + configData.applicationPath + " ; sudo git clone " + repo + " ; cd "
+                                        +  configData.applicationPath + "/" + proj +" ; " + configData.sudo + ' git checkout ' + configData.pullBranch +" ;  sudo npm link ";
+                                    console.log("command string = " +cmdString);
+                                    var child = exec (cmdString, function (err, std, ster){
                                         if (err){
                                             console.log ("\tError cloning. Error:" + ster);
                                             cb ();
