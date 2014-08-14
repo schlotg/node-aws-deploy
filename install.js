@@ -51,6 +51,21 @@ async.waterfall ([
 
     function (done){
         if (!local){
+            console.log (++i + ") Would you like the application to pull the latest code on restart? (true/false)");
+            if (configData.noPullOnRestart) {console.log ("Current Value = " + configData.noPullOnRestart + " (Press <enter> to keep)");}
+            prompt.get (['(true/false)'], function (err, results){
+                configData.noPullOnRestart = (results['(true/false)'] || configData.noPullOnRestart || 'true');
+                config.update ();
+                done ();
+            });
+        }
+        else{
+            done ();
+        }
+    },
+
+    function (done){
+        if (!local){
             console.log (++i + ") Would you like to use the node-aws-deploy logger (default = true)");
             if (configData.logger) {console.log ("Current Value = " + (configData.logger) + " (Press <enter> to keep)");}
             prompt.get (['(true/false)'], function (err, results){
