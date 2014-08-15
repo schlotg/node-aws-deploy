@@ -51,7 +51,7 @@ async.waterfall ([
 
     function (done){
         if (!local){
-            console.log (++i + ") Would you like the application to pull the latest code on restart? (true/false)");
+            console.log (++i + ") Do NOT pull the latest code on restart? (true/false)");
             if (configData.noPullOnRestart) {console.log ("Current Value = " + configData.noPullOnRestart + " (Press <enter> to keep)");}
             prompt.get (['(true/false)'], function (err, results){
                 configData.noPullOnRestart = (results['(true/false)'] || configData.noPullOnRestart || 'true');
