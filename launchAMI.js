@@ -324,14 +324,15 @@ function removeOldScaleGroups (params, cb){
         if (params.args.removeOldInstances){
             console.log ("Removing old Scale Groups and Launch configurations");
             async.eachSeries (params.AutoScalingInstances, function (instance, done) {
-                if (instance.InstanceId !== params.instanceId){
-                    AUTO.deleteAutoScalingGroup ({AutoScalingGroupName:instance.AutoScalingGroupName}, function (err, data){
+                if (instance.InstanceId === params.instanceId){
+                    AUTO.deleteAutoScalingGroup ({AutoScalingGroupName:instance.AutoScalingGroupName, ForceDelete:true}, function (err, data){
                         AUTO.deleteLaunchConfiguration ({LaunchConfigurationName:instance.LaunchConfigurationName}, function (err, data){
                             done ();
                         });
                     });
                 }
                 else{
+                    console.log ("Can't find Old Scale Group");
                     done ();
                 }
             }, function (err){
