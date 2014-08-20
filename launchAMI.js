@@ -293,9 +293,11 @@ function getNewScaleGroup (params, cb){
 function setScalingPolcies (params, cb){
     var AUTO = params.AWS && new params.AWS.AutoScaling();
     var CLOUDWATCH = params.AWS && new params.AWS.CloudWatch();
+    var alarmIndex = 0;
     if (AUTO && CLOUDWATCH){
         if (params.scaleGroup && params.scalingPolicies){
             async.eachSeries(params.scalingPolicies, function (policy, done){
+
                 var configParams = {};
                 var excludeList = {
                     PolicyARN:true,
@@ -319,6 +321,7 @@ function setScalingPolcies (params, cb){
                                 if (!err && data && data.MetricAlarms){
                                     var alarmParams = {};
                                     var alarm = data.MetricAlarms[0];
+                                    ++alarmIndex;
                                     var excludeList = {
                                         AlarmArn: true,
                                         AlarmConfigurationUpdatedTimestamp: true,
@@ -351,6 +354,8 @@ function setScalingPolcies (params, cb){
                                             break;
                                         }
                                     }
+                                    alarmParams.AlarmName = params.scaleGroup.AutoScalingGroupName + "-" + alarmIndex;
+                                    ++alarmIndex;
                                     CLOUDWATCH.putMetricAlarm (alarmParams, function (err, data){
                                         console.log ("Added Alarm: " + alarmParams.AlarmName);
                                         done (err);
