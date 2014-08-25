@@ -79,7 +79,7 @@ function exit (code){
 
 // create a class to capture stdout. Logs it to the file specified
 // doesn't let the log file grow bigger then the set limit
-function CaptureStdout(callback) {
+function CaptureStdout() {
     var oldWrite = process.stdout.write;
     var fs = require ('fs');
     var captured = false;
@@ -620,8 +620,8 @@ var capture = CaptureStdout ();
         // get the app path and the home path
         appDir = (configData && configData.applicationDirectory) || "";
         homePath  = appDir.slice (0, appDir.lastIndexOf ('/'));
-        if (configData){
-            configData.homePath = homePath; // store off the home path everytime
+        if (configData && (configData.homePath !== homePath)){
+            configData.homePath = homePath; // store off the home path only if it has changed
             config.update ();
         }
 
@@ -631,7 +631,7 @@ var capture = CaptureStdout ();
         // initialize the logger (Keep the log file fixed size by rolling the results over)
         var logger = configData && configData.logger;
         var logSize = (configData && configData.logSize) || 64 * 1024 * 1024; // 64 meg
-        if (logger !== false){
+        if (logger !== false && appDir){
             logDirectory = appDir + '/logs';
             capture.capture (true, logDirectory, configData.applicationName, logSize);
         }
