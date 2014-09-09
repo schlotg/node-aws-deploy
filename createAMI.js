@@ -122,7 +122,7 @@ if (!error){
                 else{
                     console.log ("Image creation in progress. Data:%j", image);
                     try { fs.writeFileSync ('ami.txt', image.ImageId); }
-                    catch (e);
+                    catch (e){}
                     console.log ('.');
                     var progress = '.';
                     function pollAMI () {

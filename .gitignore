@@ -9,3 +9,4 @@ dump/*
 app-config.json
 .app-config.json
 private/*
+ami.txt
