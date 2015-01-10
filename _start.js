@@ -524,7 +524,7 @@ var capture = CaptureStdout ();
         if (configData.commandArguments || configData.pullArgs){
             if (configData.commandArguments){
                 var args;
-                // try to find an overid passed in (useful for debugging)
+                // try to find an override passed in (useful for debugging)
                 var _type;
                 for (var i = 2; i < process.argv.length; ++i){
                     var arg = process.argv[i];
