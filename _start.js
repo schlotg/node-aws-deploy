@@ -524,8 +524,19 @@ var capture = CaptureStdout ();
         if (configData.commandArguments || configData.pullArgs){
             if (configData.commandArguments){
                 var args;
+                // try to find an overid passed in (useful for debugging)
+                var _type;
+                for (var i = 2; i < process.argv.length; ++i){
+                    var arg = process.argv[i];
+                    if (arg && arg.indexOf ("overide=") !== -1){
+                        _type = arg.split ("=")[1];
+                        process.argv.splice (i, 1);
+                        break;
+                    }
+                }
                 if (typeof configData.commandArguments === 'object'){
-                    var type = instanceData && instanceData.type;
+                    // if we have an override type use that.
+                    var type = _type || instanceData && instanceData.type;
                     args = configData.commandArguments[type] || "";
                     args = args.split (" ");
                     args && args.forEach (function (arg){
