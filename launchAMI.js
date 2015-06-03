@@ -113,7 +113,7 @@ function getScaleGroup (params, cb){
                     params.AutoScalingInstances = data.AutoScalingInstances;
                     // find the instance we are using to clone off of
                     var instance;
-                    var scaleGroupNames = []
+                    var scaleGroupNames = [];
                     for (var i = 0; i < data.AutoScalingInstances.length; ++i){
                         if (data.AutoScalingInstances[i].InstanceId === params.instanceId){
                             instance = data.AutoScalingInstances[i];
