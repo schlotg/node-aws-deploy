@@ -79,7 +79,7 @@ function exit (code){
 
 // create a class to capture stdout. Logs it to the file specified
 // doesn't let the log file grow bigger then the set limit
-function CaptureStdout(callback) {
+function CaptureStdout() {
     var oldWrite = process.stdout.write;
     var fs = require ('fs');
     var captured = false;
@@ -524,8 +524,19 @@ var capture = CaptureStdout ();
         if (configData.commandArguments || configData.pullArgs){
             if (configData.commandArguments){
                 var args;
+                // try to find an override passed in (useful for debugging)
+                var _type;
+                for (var i = 2; i < process.argv.length; ++i){
+                    var arg = process.argv[i];
+                    if (arg && arg.indexOf ("override=") !== -1){
+                        _type = arg.split ("=")[1];
+                        process.argv.splice (i, 1);
+                        break;
+                    }
+                }
                 if (typeof configData.commandArguments === 'object'){
-                    var type = instanceData && instanceData.type;
+                    // if we have an override type use that.
+                    var type = _type || instanceData && instanceData.type;
                     args = configData.commandArguments[type] || "";
                     args = args.split (" ");
                     args && args.forEach (function (arg){
@@ -620,8 +631,8 @@ var capture = CaptureStdout ();
         // get the app path and the home path
         appDir = (configData && configData.applicationDirectory) || "";
         homePath  = appDir.slice (0, appDir.lastIndexOf ('/'));
-        if (configData){
-            configData.homePath = homePath; // store off the home path everytime
+        if (configData && (configData.homePath !== homePath)){
+            configData.homePath = homePath; // store off the home path only if it has changed
             config.update ();
         }
 
@@ -631,7 +642,7 @@ var capture = CaptureStdout ();
         // initialize the logger (Keep the log file fixed size by rolling the results over)
         var logger = configData && configData.logger;
         var logSize = (configData && configData.logSize) || 64 * 1024 * 1024; // 64 meg
-        if (logger !== false){
+        if (logger !== false && appDir){
             logDirectory = appDir + '/logs';
             capture.capture (true, logDirectory, configData.applicationName, logSize);
         }

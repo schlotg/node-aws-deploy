@@ -63,8 +63,8 @@ user data to:
 
     {"type":"development", "listensTo": "develop", "deploy":true}
 
-Where type, is the instance type. The name only matters in that it should make sense to you and this instance will communicate with others of the same type. The
-ListensTo field specifies which branch of your repository it should listen to and automatically pull from when it sees changes.
+Where type, is the instance type. The name only matters in that it should make sense to you and this instance will communicate with others of the same type and it can be used to select command line params out of the 'commandArguments' field. The
+'ListensTo' field specifies which branch of your repository it should listen to and automatically pull from when it sees changes.
 When deploy is set to true:
 
 1. The node-aws-deploy server is started and listening for /pull, /restart, and rebuild
@@ -76,6 +76,16 @@ When deploy is set to false:
 1. On restarts node-aws-deploy will check node and npm dependencies in the master project and the dependency list and remove or install them as needed
 
 You will likely want deploy set to false in your production deploy but have it set to true in staging and testing builds.
+
+'type' can now also be used to specify a set of command line params. If the 'commandArguments' field specified in the .app-config.json file is an object (example shown below), type is used as a selection field. As an example, if type is equal to 'development', the command line params will be: "--production --httpPort=80 --httpsPort=443".
+
+    "commandArguments": {
+        "development": "--production --httpPort=80 --httpsPort=443",
+        "production": "--production",
+        "debug": "--remoteDB --httpPort=80 --httpsPort=443"
+    },
+
+Sometimes for debugging you might need to manually launch the server with a different set of command arguments. To do this easily you can use the 'override' command line parameter. As an example you can SSH into your server, stop your application (sudo stop <app name>), and then restart it with the debug set of command arguments by typing: "sudo node _start.js override=debug". Make sure you do this from the node-aws-deploy directory. This will apply the debug command line parameters listed in the "commandArguments" above.
 
 
 On Mac, open a terminal and change directory to the folder containing your key pair your are using with the instance
@@ -126,42 +136,6 @@ Install Git and clone the install script:
         sudo node-aws-deploy/install_aws
 
 
-###Setting up a AWS Node Server from the node-aws-deploy image
-
-An even easier approach is to create an instance off of the aws-node-deploy image in the Amazon Store (Still In Progress)
-
-Create an AWS account http://aws.amazon.com/
-Launch an EC2 instance (Make sure you have downloaded the ssh key/pair so you can connect to your instance). Make sure based off of the node-aws-deploy AMI. Set the user data to:
-
-    {"type":"development", "listensTo": "develop", "deploy":true}
-
-Where type, is the instance type. The name only matters in that it should make sense to you and this instance will communicate with others of the same type. The ListensTo field specifies which branch of
-your repository it should listen to and automatically pull from when it sees changes and deploy turns this system on and off. You might want if off in your production deploy but have it auto deploy for
-develop and testing builds. On Mac, open a terminal and change directory to the folder containing your key pair your are using with the instance
-
-Ensure your key pair has the right permissions (Substitute key_pair_name with the actual name of your file):
-
-    sudo chmod 400 key_pair_name.pem
-
-Launch a secure shell into the ec2 instance (substitute dns_addr with the dns address of the running ec2 instance you just launched)
-
-        ssh -i key_pair_name.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ec2-user@dns_addr
-
-From the ssh terminal:
-
-Generate a ssh key (use your email address):
-
-    sudo ssh-keygen -t rsa -C "your_email@mail.com"
-    press <enter> for the rest of the questions
-
-Ensure you have the latest node-aws-deploy and AWS updates:
-
-        sudo yum update
-        cd ~/node-aws-deploy
-        sudo git pull
-        sudo node install.js
-
-
 ###Using node-aws-deploy
 
 To launch type:
@@ -181,6 +155,13 @@ To manually launch it so you can see output at the console:
     sudo stop <your application name>
     cd ~/node-aws-deploy
     sudo node _start.js
+
+To manually launch with a different profile specified in the "commandArgumentsField"
+
+    sudo stop <your application name>
+    cd ~/node-aws-deploy
+    sudo node _start.js overide=debug
+
 
 To reconfigure you can always relaunch install.js from the ~/node-aws-deploy directory or if you know 'vi' you can manually edit the .app-config.json by typing:
 
@@ -238,7 +219,7 @@ can trigger it for different branches by passing in the branch like so:
     node manualWebHook.js master
 
 ####Triggering deployments locally
-Webhooks might seem light a great idea at first, but even with small sized teams you can get into situations where the server is constantly pulling and being restarted. In a lot of cases
+Webhooks might seem like a great idea at first, but even with small sized teams you can get into situations where the server is constantly pulling and being restarted. In a lot of cases
 it makes a lot more sense to coordinate the deployments. The postPullToAllInstances.js script allows you to trigger the pull manually from a local development machine. You can also trigger
 a restart or a rebuild. 'pull' and 'restart' are self explanatory but the rebuild command clears all the package.copy files in the master project and its dependencies so that all the npm
 resources are pulled and re-installed from scratch.
@@ -346,5 +327,20 @@ decode it on the production build with the key stored on the server only. The po
 In AWS you can specify per instance or per launch configuration user data for the ec-2 instances. This is the mechanism that is used to distinguish the functionality differences across
 instances and allows the use of a single AMI created in a staging server to also be deployed in production and have the restart pulling and command server turned off in production only.
 Any other differences such as different keys sets across deployments can be accomplished by using the user defined prelaunch.js to steer the application to the production assets.
+
+Using the 'type' variable specified in the user data of the instance can be a very easy way to change functionality of your application based on its deployment type. The 'commandArguments' field of the
+.app-config.json file can be a single string or an object of command strings that go with different types of types. Additionally you can manually override the type by using the 'override=' command line parameter.
+
+As an example, with the following commandArguments entry:
+
+    "commandArguments": {
+        "development": "--production --httpPort=80 --httpsPort=443",
+        "production": "--production",
+        "debug": "--remoteDB --httpPort=80 --httpsPort=443"
+    },
+
+Instances with user data set to "type": "production", would have the command argument string "--production". And you could override it during manual launch by typing:
+
+    "sudo node _start.js override=debug"
 
 

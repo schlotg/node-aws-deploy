@@ -21,32 +21,52 @@ function createCloudInterface() {
     return {
         // this must be called first to init everything
         init: function (cb){
-            console.log (config.path);
-
-            if (configData && configData.accessKeyId && configData.secretAccessKey && configData.region){
+            instance_id = "None";
+            instance_user_data = {};
+            if (configData && configData.accessKeyId && configData.secretAccessKey && configData.region) {
                 var error;
-                try {AWS && AWS.config.loadFromPath(config.path + '/.app-config.json');}
-                catch (err){error = err;}
-                finally { if (!error) {EC2 = AWS && new AWS.EC2();} }
-            }
-
-            var child = exec ('wget -q -O - http://169.254.169.254/latest/meta-data/instance-id', function (err, std, ster){
-                // get our instance id
-                if(!err){instance_id= std;}
-                else{instance_id = "None";}
-                // if this is an AWS instance go get the instance user data
-                if (instance_id !== "None"){
-                    var child2 = exec ('wget -q -O - http://169.254.169.254/latest/user-data', function (err, std, ster){
-                        // get our instance user data
-                        if(!err && std){
-                            try { instance_user_data = JSON.parse(std);}
-                            catch (err) {instance_user_data = std;}
-                        }
-                        cb && cb ();
-                    });
+                try {
+                    AWS && AWS.config.loadFromPath(config.path + '/.app-config.json');
                 }
-                else{ cb && cb ();}
-            });
+                catch (err) {
+                    error = err;
+                    console.log(err);
+                }
+                finally {
+                    if (!error) {
+                        EC2 = AWS && new AWS.EC2();
+                    }
+                }
+            }
+            if (configData.remote == 'n'){
+                cb && cb();
+            }
+            else {
+                var child = exec('wget -q -O - http://169.254.169.254/latest/meta-data/instance-id', function (err, std, ster) {
+                    // get our instance id
+                    if (!err) {
+                        instance_id = std;
+                    }
+                    // if this is an AWS instance go get the instance user data
+                    if (instance_id !== "None") {
+                        var child2 = exec('wget -q -O - http://169.254.169.254/latest/user-data', function (err, std, ster) {
+                            // get our instance user data
+                            if (!err && std) {
+                                try {
+                                    instance_user_data = JSON.parse(std);
+                                }
+                                catch (err) {
+                                    instance_user_data = std;
+                                }
+                            }
+                            cb && cb();
+                        });
+                    }
+                    else {
+                        cb && cb();
+                    }
+                });
+            }
         },
         // get the instance id for this instance
         getInstanceId: function() {

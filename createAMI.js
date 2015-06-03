@@ -3,6 +3,7 @@ var config = require ("./config").data;
 var async = require ("async");
 var AWS = require ('aws-sdk');
 var EC2;
+var fs = require ('fs');
 
 // move the cursor up one line
 function moveCursorUp () {
@@ -120,6 +121,8 @@ if (!error){
                 }
                 else{
                     console.log ("Image creation in progress. Data:%j", image);
+                    try { fs.writeFileSync ('ami.txt', image.ImageId); }
+                    catch (e){}
                     console.log ('.');
                     var progress = '.';
                     function pollAMI () {

@@ -151,6 +151,24 @@ function getScaleGroup (params, cb){
     else {cb && cb ("AWS is not configured correctly");}
 }
 
+// get the scaling policies assocaited with this scale group
+function getScalingPolicies (params, cb){
+    var AUTO = params.AWS && new params.AWS.AutoScaling();
+    if (AUTO){
+        if (params.scaleGroup){
+            AUTO.describePolicies ({AutoScalingGroupName:params.scaleGroup.AutoScalingGroupName}, function (error, data){
+                if (error) { cb && cb (error);}
+                else{
+                    params.scalingPolicies = data.ScalingPolicies;
+                    cb && cb (null, params);
+                }
+            });
+        }
+        else {cb && cb ("ScaleGroup not specified");}
+    }
+    else {cb && cb ("AWS is not configured correctly");}
+}
+
 // Get the launch configuration. Returns -> cb (err, launchConfiguration)
 function getLaunchConfiguration (params, cb){
     var AUTO = params.AWS && new params.AWS.AutoScaling();
@@ -271,6 +289,96 @@ function getNewScaleGroup (params, cb){
     else {cb && cb ("AWS is not configured correctly");}
 }
 
+function setScalingPolcies (params, cb){
+    var AUTO = params.AWS && new params.AWS.AutoScaling();
+    var CLOUDWATCH = params.AWS && new params.AWS.CloudWatch();
+    var alarmIndex = 0;
+    if (AUTO && CLOUDWATCH){
+        if (params.scaleGroup && params.scalingPolicies){
+            async.eachSeries(params.scalingPolicies, function (policy, done){
+
+                var configParams = {};
+                var excludeList = {
+                    PolicyARN:true,
+                    Alarms:true
+                };
+                for (var k in policy){
+                    var val = policy[k];
+                    if (val && !(excludeList[k])) {
+                        configParams[k] = val;
+                    }
+                }
+                configParams.AutoScalingGroupName = params.scaleGroup.AutoScalingGroupName;
+                AUTO.putScalingPolicy (configParams, function (err, data){
+                    if (!err && data){
+                        params.policyARNs = params.policyARNs || [];
+                        params.policyARNs.push (data.PolicyARN);
+                        var policyARN = data.PolicyARN;
+                        // now create the alarm for this
+                        if (policy.Alarms.length){
+                            CLOUDWATCH.describeAlarms ({AlarmNames:[policy.Alarms[0].AlarmName]}, function (err, data){
+                                if (!err && data && data.MetricAlarms){
+                                    var alarmParams = {};
+                                    var alarm = data.MetricAlarms[0];
+                                    ++alarmIndex;
+                                    var excludeList = {
+                                        AlarmArn: true,
+                                        AlarmConfigurationUpdatedTimestamp: true,
+                                        StateValue:true,
+                                        StateReason:true,
+                                        StateReasonData:true,
+                                        StateUpdatedTimestamp:true
+                                    };
+                                    for (var k in alarm){
+                                        var val = alarm[k];
+                                        if (val && !(excludeList[k])) {
+                                            alarmParams[k] = val;
+                                        }
+                                    }
+                                    // set the AutoScalingGroupName
+                                    var dim = alarmParams.Dimensions;
+                                    for (var i = 0; i < dim.length; ++i){
+                                        var pair = dim[i];
+                                        if (pair.Name === "AutoScalingGroupName"){
+                                            pair.Value = configParams.AutoScalingGroupName;
+                                            break;
+                                        }
+                                    }
+                                    // set the actions correctly
+                                    var actions = alarmParams.AlarmActions;
+                                    for (var i = 0; i < actions.length; ++i){
+                                        var action = actions[i];
+                                        if (action.indexOf("autoscaling") !== -1){
+                                            actions[i] = policyARN;
+                                            break;
+                                        }
+                                    }
+                                    alarmParams.AlarmName = params.scaleGroup.AutoScalingGroupName + "-" + alarmIndex;
+                                    ++alarmIndex;
+                                    CLOUDWATCH.putMetricAlarm (alarmParams, function (err, data){
+                                        console.log ("Added Alarm: " + alarmParams.AlarmName);
+                                        done (err);
+                                    });
+                                }
+                                else {done (err);}
+                            });
+                        }
+                        else {
+                            console.log ("No Alarms Found");
+                            done (err);
+                        }
+                    }
+                    else { done (err);}
+                });
+            }, function (err){
+                cb && cb (err, params);
+            });
+        }
+        else {cb && cb ("ScaleGroup or ScalingPolicies not specified");}
+    }
+    else {cb && cb ("AWS is not configured correctly");}
+}
+
 // Keep polling until instances are ready
 function areInstancesReady (params, cb){
     var ELB, EC2;
@@ -352,10 +460,12 @@ async.waterfall ([
     init,
     getInstanceFromLoadBalancer,
     getScaleGroup,
+    getScalingPolicies,
     getLaunchConfiguration,
     createLaunchConfiguration,
     createScaleGroup,
     getNewScaleGroup,
+    setScalingPolcies,
     areInstancesReady,
     removeOldScaleGroups
 
