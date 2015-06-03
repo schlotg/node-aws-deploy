@@ -255,7 +255,6 @@ function createScaleGroup (params, cb){
     }
     else {cb && cb ("AWS is not configured correctly");}
 }
-
 // get the new Scale Group
 function getNewScaleGroup (params, cb){
     var AUTO = params.AWS && new params.AWS.AutoScaling();
