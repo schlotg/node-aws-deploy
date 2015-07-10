@@ -117,8 +117,8 @@ function getScaleGroup (params, cb){
                     for (var i = 0; i < data.AutoScalingInstances.length; ++i){
                         if (data.AutoScalingInstances[i].InstanceId === params.instanceId){
                             instance = data.AutoScalingInstances[i];
+                            scaleGroupNames.push (instance.AutoScalingGroupName);
                         }
-                        scaleGroupNames.push (instance.AutoScalingGroupName);
                     }
                     var scaleGroupName = instance && instance.AutoScalingGroupName;
                     AUTO.describeAutoScalingGroups ({AutoScalingGroupNames:scaleGroupNames}, function (error, data){
