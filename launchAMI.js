@@ -573,7 +573,7 @@ async.waterfall ([
 
     init,
     getInstanceFromLoadBalancer,
-    /*getScaleGroup,
+    getScaleGroup,
     getScalingPolicies,
     getLaunchConfiguration,
     createLaunchConfiguration,
@@ -582,7 +582,7 @@ async.waterfall ([
     setScalingPolcies,
     areInstancesReady,
     removeOldScaleGroups,
-    verifyScalingPoliciesAreInPlace,*/
+    verifyScalingPoliciesAreInPlace,
     getVersion
 
 ],
