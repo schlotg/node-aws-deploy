@@ -328,6 +328,9 @@ function setScalingPolcies (params, cb){
                     PolicyARN:true,
                     Alarms:true
                 };
+                if (policy.PolicyType === 'SimpleScaling'){
+                    excludeList.StepAdjustments=true;
+                }
                 for (var k in policy){
                     var val = policy[k];
                     if (val && !(excludeList[k])) {
@@ -507,8 +510,13 @@ function verifyScalingPoliciesAreInPlace (params, cb){
 
 function getVersion (params, cb){
     var https = require ('https');
-    var route = 'https://' + params.loadBalancer && params.loadBalancer.DNSName + '/version';
-    https.get(route, function(res) {
+    var route = (params.loadBalancer && params.loadBalancer.DNSName);
+    var options = {
+        hostname: route,
+        rejectUnauthorized: false,
+        path:'/version'
+    };
+    https.get(options, function(res) {
         res.on('data', function(d) {
             var version = d && d.toString ();
             params.version = version;
@@ -524,7 +532,7 @@ async.waterfall ([
 
     init,
     getInstanceFromLoadBalancer,
-    /*getScaleGroup,
+    getScaleGroup,
     getScalingPolicies,
     getLaunchConfiguration,
     createLaunchConfiguration,
@@ -533,7 +541,7 @@ async.waterfall ([
     setScalingPolcies,
     areInstancesReady,
     removeOldScaleGroups,
-    verifyScalingPoliciesAreInPlace,*/
+    verifyScalingPoliciesAreInPlace,
     getVersion
 
 ],
