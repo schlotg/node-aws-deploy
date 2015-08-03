@@ -509,6 +509,7 @@ function verifyScalingPoliciesAreInPlace (params, cb){
 }
 
 function getVersion (params, cb){
+    console.log ("Verifying Version");
     var https = require ('https');
     var route = (params.loadBalancer && params.loadBalancer.DNSName);
     var options = {
@@ -516,15 +517,55 @@ function getVersion (params, cb){
         rejectUnauthorized: false,
         path:'/version'
     };
-    https.get(options, function(res) {
-        res.on('data', function(d) {
-            var version = d && d.toString ();
-            params.version = version;
-            cb (null, params);
+
+    var version;
+    var count = 0;
+    var limit = 100;
+    var dots='';
+
+    function _getVersion (cb) {
+        https.get(options, function (res) {
+            res.on('data', function (d) {
+                var version = d && d.toString();
+                if (version.indexOf('403 Error') === -1) {
+                    cb(version);
+                }
+                else {
+                    cb();
+                }
+            });
+        }).on('error', function (e) {
+            cb();
         });
-    }).on('error', function(e) {
-        cb (e);
-    });
+    }
+    // do to connection draining, we might have to try several times to get the right result back
+    async.whilst(
+        function () { return !version && count < limit },
+        function (done) {
+            count++;
+            _getVersion (function (_version){
+                if (_version === args.deploymentVersion){
+                    version = _version;
+                    done ();
+                }else{
+                    version = null;
+                    setTimeout(done, 1000);
+                    moveCursorUp ();
+                    dots += '.';
+                    console.log (dots);
+                }
+            });
+        },
+        function () {
+            if (version){
+                params.version = version;
+                cb && cb (null, params);
+            }
+            else{
+                cb && cb ("Could not get the correct version back from the new server(s)");
+            }
+        }
+    );
 }
 
 // CODE EXECUTION STARTS HERE
@@ -532,7 +573,7 @@ async.waterfall ([
 
     init,
     getInstanceFromLoadBalancer,
-    getScaleGroup,
+    /*getScaleGroup,
     getScalingPolicies,
     getLaunchConfiguration,
     createLaunchConfiguration,
@@ -541,7 +582,7 @@ async.waterfall ([
     setScalingPolcies,
     areInstancesReady,
     removeOldScaleGroups,
-    verifyScalingPoliciesAreInPlace,
+    verifyScalingPoliciesAreInPlace,*/
     getVersion
 
 ],
