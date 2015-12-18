@@ -1,31 +1,31 @@
 {
-    "name": "node-aws-deploy",
-    "version": "0.9.0",
-    "description": "Deploy Node quickly and easily to AWS Linux instances",
-    "main": "_start.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "dependencies": {
-        "aws-sdk" :"",
-        "async" : "",
-        "prompt": ""
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/schlotg/node-aws-deploy.git"
-    },
-    "keywords": [
-        "Node",
-        "Nodejs",
-        "deploy",
-        "AWS",
-        "EC2"
-    ],
-    "author": "Greg Schlottmann",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/schlotg/node-aws-deploy/issues"
-    },
-    "homepage": "https://github.com/schlotg/node-aws-deploy"
+  "name": "node-aws-deploy",
+  "version": "0.9.0",
+  "description": "Deploy Node quickly and easily to AWS Linux instances",
+  "main": "_start.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "async": "^1.4.0",
+    "aws-sdk": "^2.1.42",
+    "prompt": "^0.2.14"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/schlotg/node-aws-deploy.git"
+  },
+  "keywords": [
+    "Node",
+    "Nodejs",
+    "deploy",
+    "AWS",
+    "EC2"
+  ],
+  "author": "Greg Schlottmann",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/schlotg/node-aws-deploy/issues"
+  },
+  "homepage": "https://github.com/schlotg/node-aws-deploy"
 }

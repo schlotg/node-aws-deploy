@@ -70,6 +70,7 @@ function getInstanceFromLoadBalancer(params, cb){
                 else {
                     var instanceId;
                     var attachedInstances = [];
+                    params.loadBalancer = data.LoadBalancerDescriptions[0];
                     async.eachSeries (data.LoadBalancerDescriptions[0].Instances, function (instance, done){
                             attachedInstances.push (instance.InstanceId);
                             // check that the instance state is healthy
@@ -117,8 +118,8 @@ function getScaleGroup (params, cb){
                     for (var i = 0; i < data.AutoScalingInstances.length; ++i){
                         if (data.AutoScalingInstances[i].InstanceId === params.instanceId){
                             instance = data.AutoScalingInstances[i];
+                            scaleGroupNames.push (instance.AutoScalingGroupName);
                         }
-                        scaleGroupNames.push (instance.AutoScalingGroupName);
                     }
                     var scaleGroupName = instance && instance.AutoScalingGroupName;
                     AUTO.describeAutoScalingGroups ({AutoScalingGroupNames:scaleGroupNames}, function (error, data){
@@ -240,9 +241,34 @@ function createScaleGroup (params, cb){
                     configParams[k] = val;
                 }
             }
+
+            var name = params.args.deploymentName + "-ec2-" + params.args.deploymentVersion;
+
             configParams.LaunchConfigurationName = params.LaunchConfigurationName;
             configParams.AutoScalingGroupName = params.args.deploymentName + '-asg-' + params.args.deploymentVersion;
-            configParams.Tags[0].ResourceId = configParams.AutoScalingGroupName;
+
+            var tagEntry={
+                Key:"Name",
+                PropagateAtLaunch: true,
+                ResourceId: configParams.AutoScalingGroupName,
+                ResourceType:"auto-scaling-group",
+                Value: name
+            };
+
+            // make the sure the 'Name' tag is added properly
+            var tagAdded = false;
+            configParams.Tags.every (function (tag, i){
+                var _continue = true;
+                if (tag.Key === "Name"){
+                    tagAdded = true;
+                    _continue = false;
+                    configParams.Tags[i] = tagEntry;
+                }
+                return _continue;
+            });
+            if (!tagAdded){
+                configParams.Tags.push (tagEntry);
+            }
 
             AUTO.createAutoScalingGroup (configParams, function (err, data){
                 params.AutoScalingGroupName = configParams.AutoScalingGroupName;
@@ -255,7 +281,6 @@ function createScaleGroup (params, cb){
     }
     else {cb && cb ("AWS is not configured correctly");}
 }
-
 // get the new Scale Group
 function getNewScaleGroup (params, cb){
     var AUTO = params.AWS && new params.AWS.AutoScaling();
@@ -303,6 +328,9 @@ function setScalingPolcies (params, cb){
                     PolicyARN:true,
                     Alarms:true
                 };
+                if (policy.PolicyType === 'SimpleScaling'){
+                    excludeList.StepAdjustments=true;
+                }
                 for (var k in policy){
                     var val = policy[k];
                     if (val && !(excludeList[k])) {
@@ -310,6 +338,7 @@ function setScalingPolcies (params, cb){
                     }
                 }
                 configParams.AutoScalingGroupName = params.scaleGroup.AutoScalingGroupName;
+
                 AUTO.putScalingPolicy (configParams, function (err, data){
                     if (!err && data){
                         params.policyARNs = params.policyARNs || [];
@@ -455,6 +484,90 @@ function removeOldScaleGroups (params, cb){
     else {cb && cb ("AWS is not configured correctly");}
 }
 
+function verifyScalingPoliciesAreInPlace (params, cb){
+    var AUTO = params.AWS && new params.AWS.AutoScaling();
+    if (AUTO){
+        var request = {
+            AutoScalingGroupName: params.AutoScalingGroupName//,
+            //MaxRecords: 0,
+            //PolicyTypes: ['SimpleScaling', 'StepScaling']
+        };
+        AUTO.describePolicies (request, function (err, data){
+            if (data && data.ScalingPolicies && data.ScalingPolicies.length >= 2){
+                console.log ("Found the following scaling polices:");
+                data.ScalingPolicies.forEach (function (policy){
+                    console.log ("\t" + policy.PolicyName);
+                });
+                cb && cb (null, params);
+            }
+            else{
+                cb && cb ("WARNING SCALING POLICIES DO NOT APPEAR TO BE IN PLACE PLEASE MANUALLY VERIFY");
+            }
+        });
+    }
+    else {cb && cb ("AWS is not configured correctly");}
+}
+
+function getVersion (params, cb){
+    console.log ("Verifying Version");
+    var https = require ('https');
+    var route = (params.loadBalancer && params.loadBalancer.DNSName);
+    var options = {
+        hostname: route,
+        rejectUnauthorized: false,
+        path:'/version'
+    };
+
+    var version;
+    var count = 0;
+    var limit = 100;
+    var dots='';
+
+    function _getVersion (cb) {
+        https.get(options, function (res) {
+            res.on('data', function (d) {
+                var version = d && d.toString();
+                if (version.indexOf('403 Error') === -1) {
+                    cb(version);
+                }
+                else {
+                    cb();
+                }
+            });
+        }).on('error', function (e) {
+            cb();
+        });
+    }
+    // do to connection draining, we might have to try several times to get the right result back
+    async.whilst(
+        function () { return !version && count < limit },
+        function (done) {
+            count++;
+            _getVersion (function (_version){
+                if (_version === args.deploymentVersion){
+                    version = _version;
+                    done ();
+                }else{
+                    version = null;
+                    setTimeout(done, 1000);
+                    moveCursorUp ();
+                    dots += '.';
+                    console.log (dots);
+                }
+            });
+        },
+        function () {
+            if (version){
+                params.version = version;
+                cb && cb (null, params);
+            }
+            else{
+                cb && cb ("Could not get the correct version back from the new server(s)");
+            }
+        }
+    );
+}
+
 // CODE EXECUTION STARTS HERE
 async.waterfall ([
 
@@ -468,16 +581,18 @@ async.waterfall ([
     getNewScaleGroup,
     setScalingPolcies,
     areInstancesReady,
-    removeOldScaleGroups
+    removeOldScaleGroups,
+    verifyScalingPoliciesAreInPlace,
+    getVersion
 
 ],
-    function (err){
+    function (err, params){
         if (err){
-            console.log ("There were errors trying to launch this AMI:");
-            console.log (err);
+            console.error ("There were errors trying to launch this AMI:");
+            console.error (err);
         }
         else{
-            console.log ("Successfully deployed AMI:" + args.amiId);
+            console.log ("Successfully deployed AMI:" + params.version);
         }
     }
 );

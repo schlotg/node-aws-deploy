@@ -73,7 +73,7 @@ var args = process.argv[4];
 if (args){
     try {args = JSON.parse (args);}
     catch (e){
-        console.log ("Params are not a JSON. Assuming a a string");
+        console.log ("Params are not a JSON. Assuming a string");
         args = process.argv[4]
     }
 }
