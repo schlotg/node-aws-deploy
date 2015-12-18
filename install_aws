@@ -48,7 +48,7 @@ respawn
 script
         cd \$ENTRY
         sleep 10
-        exec sudo node \$ENTRY/_start.js >> \$APP_PATH/logs/log 2>&1
+        exec sudo node \$ENTRY/_start.js >> \$ENTRY/logs/log 2>&1
 end script
 
 " >> node-aws-deploy.conf
@@ -58,5 +58,7 @@ echo "UpStart Entry Complete..."
 
 # launch the installer for configuring your app
 cd /home/ec2-user/node-aws-deploy
+sudo mkdir logs
+sudo chmod 666 logs
 sudo npm install -d
 sudo node install.js
