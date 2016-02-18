@@ -399,8 +399,8 @@ var capture = CaptureStdout ();
                 projPath = appDir + '/';
             }
             else {
-                _parsed_package = readJson (projPath + "package.copy");
-                _parsed_copy = readJson (projPath + "package.json");
+                _parsed_package = readJSON (projPath + "package.copy");
+                _parsed_copy = readJSON (projPath + "package.json");
             }
 
             console.log("\nChecking for Node Module dependency changes for:" + projPath);
