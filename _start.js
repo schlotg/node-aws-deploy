@@ -500,7 +500,7 @@ var capture = CaptureStdout ();
                         }
                     }
                     console.log("\tInstalling new Bower Modules");
-                    var cmd_str = (projPath) ? "cd " + projPath + " ; " + sudo + "bower install -d" : sudo + "bower install -d";
+                    var cmd_str = (projPath) ? "cd " + projPath + " ; bower install -d" : "bower install -d";
                     var child = exec(cmd_str, function (err, std, ster) {
                         if (err) {
                             console.log("\t\tError installing Bower modules. Error:" + ster + " :" + err);
