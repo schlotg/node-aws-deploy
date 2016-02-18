@@ -80,6 +80,7 @@ function exit (code){
 // read in JSON safely
 function readJSON (fileName){
     console.log ("  reading in " + fileName);
+    var fs = require ('fs');
     var file, json;
     try {file = fs.readFileSync(fileName).toString();}
     catch (e) {file = "";}
