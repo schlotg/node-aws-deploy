@@ -454,7 +454,7 @@ var capture = CaptureStdout ();
             var _parsed_copy, _parsed_package, dependencyPath;
 
             // determine the bower path:
-            dependencyPath = (projPath) ? parseJson (projPath + '.bowerrc') : parseJson ('.bowerrc');
+            dependencyPath = (projPath) ? readJSON (projPath + '.bowerrc') : readJSON ('.bowerrc');
             dependencyPath = (dependencyPath && dependencyPath.json && dependencyPath.json.directory) ?
                 dependencyPath.json.directory : "bower_components";
             dependencyPath += '/';
@@ -466,8 +466,8 @@ var capture = CaptureStdout ();
 
             }
             else {
-                _parsed_package = parseJson (projPath + "bower.json");
-                _parsed_copy = parseJson (projPath + "bower.copy");
+                _parsed_package = readJSON (projPath + "bower.json");
+                _parsed_copy = readJSON (projPath + "bower.copy");
             }
 
             console.log("\nChecking for Bower dependency changes for:" + projPath);
