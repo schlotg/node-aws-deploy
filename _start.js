@@ -88,7 +88,6 @@ function readJSON (fileName){
         try {json = JSON.parse (file);}
         catch (e) {json = null;}
     }
-    console.log ({str:file, json:json});
     return (file && json) ? {str:file, json:json} : null;
 }
 
@@ -413,7 +412,7 @@ var capture = CaptureStdout ();
                 cb && cb();
             }
             else { // delete the modules that have changed and re-install with new versions
-                if (!_package_copy.str || (_package_copy.str !== _package_json.str)) {
+                if (!_parsed_copy.str || (_parsed_copy.str !== _parsed_package.str)) {
                     console.log("\tNPM dependency changes detected");
                     if (_parsed_package && _parsed_package.json && _parsed_package.json.dependencies) {
                         for (var package_name in _parsed_package.json.dependencies) {
@@ -480,7 +479,7 @@ var capture = CaptureStdout ();
                 cb && cb();
             }
             else { // delete the modules that have changed and re-install with new versions
-                if (!_package_copy || (_package_copy.str !== _package_json.str)) {
+                if (!_parsed_copy || (_parsed_copy.str !== _parsed_package.str)) {
                     console.log("\Bower dependency changes detected");
                     if (_parsed_package && _parsed_package.json && _parsed_package.json.dependencies) {
                         for (var package_name in _parsed_package.json.dependencies) {
