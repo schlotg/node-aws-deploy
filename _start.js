@@ -407,6 +407,7 @@ var capture = CaptureStdout ();
             if (!_parsed_package) {
                 console.log("WARNING Your Application has no 'package.json' . It is highly" +
                     " recommended that you use one to manage your NPM dependencies");
+                cb && cb();
             }
             else { // delete the modules that have changed and re-install with new versions
                 if (!_package_copy.str || (_package_copy.str !== _package_json.str)) {
@@ -473,6 +474,7 @@ var capture = CaptureStdout ();
             if (!_parsed_package) {
                 console.log("WARNING Your Application has no 'bower.json' . It is highly" +
                     " recommended that you use one to manage your client side dependencies");
+                cb && cb();
             }
             else { // delete the modules that have changed and re-install with new versions
                 if (!_package_copy || (_package_copy.str !== _package_json.str)) {
