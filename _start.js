@@ -87,6 +87,7 @@ function readJSON (fileName){
         try {json = JSON.parse (file);}
         catch (e) {json = null;}
     }
+    console.log ({str:file, json:json});
     return (file && json) ? {str:file, json:json} : null;
 }
 
