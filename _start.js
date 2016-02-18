@@ -404,7 +404,7 @@ var capture = CaptureStdout ();
             }
 
             console.log("\nChecking for Node Module dependency changes for:" + projPath);
-            if (!_package_json) {
+            if (!_parsed_package) {
                 console.log("WARNING Your Application has no 'package.json' . It is highly" +
                     " recommended that you use one to manage your NPM dependencies");
             }
@@ -470,7 +470,7 @@ var capture = CaptureStdout ();
             }
 
             console.log("\nChecking for Bower dependency changes for:" + projPath);
-            if (!_package_json) {
+            if (!_parsed_package) {
                 console.log("WARNING Your Application has no 'bower.json' . It is highly" +
                     " recommended that you use one to manage your client side dependencies");
             }
