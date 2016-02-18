@@ -77,6 +77,18 @@ function exit (code){
     }, 1000);
 }
 
+// read in JSON safely
+function readJSON (fileName){
+    var file, json;
+    try {file = fs.readFileSync(fileName).toString();}
+    catch (e) {file = "";}
+    if (file){
+        try {json = JSON.parse (file);}
+        catch (e) {json = null;}
+    }
+    return (file && json) ? {str:file, json:json} : null;
+}
+
 // create a class to capture stdout. Logs it to the file specified
 // doesn't let the log file grow bigger then the set limit
 function CaptureStdout() {
@@ -130,7 +142,8 @@ var capture = CaptureStdout ();
     var configData = config.data;
 
     var error, pull_error = "";
-    var package_json, package_copy, parsed_package, parsed_copy;
+    var parsed_package, parsed_copy;
+    var parsed_bower, parsed_bowerCopy;
     var restart = false;
     var need_restart = false;
     // This an abstraction layer for different cloud services
@@ -273,17 +286,17 @@ var capture = CaptureStdout ();
     }
     // check if any NPM dependencies changed
     function checkNodeDependencies (cb, req, res){
-        // read in our files
+
+        // read in our npm files
         console.log ("\nChecking for Node version changes");
-        try { package_copy = fs.readFileSync ("package.copy");}
-        catch (e) { package_copy = null;}
-        try {package_json = fs.readFileSync ("package.json");}
-        catch (e) { package_json = null;}
-        parsed_package = (package_json) ? JSON.parse (package_json) : null;
-        parsed_copy = (package_copy) ? JSON.parse (package_copy) : null;
+        parsed_package = readJSON ("package.copy");
+        parsed_copy = readJSON ("package.json");
+        parsed_bower = readJSON ("bower.copy");
+        parsed_bowerCopy = readJSON ("bower.json");
+
         // see if our node versions match
-        if (parsed_package && parsed_package.nodeVersion){
-            var version = parsed_package.nodeVersion.replace ('v', "");
+        if (parsed_package && parsed_package.json && parsed_package.json.nodeVersion){
+            var version = parsed_package.json.nodeVersion.replace ('v', "");
             var node_version = process.version.replace ('v', "");
             if (version !== node_version){
                 console.log ("	Upgrading Node");
@@ -357,7 +370,6 @@ var capture = CaptureStdout ();
     // update and compare it. Find ones that have changed and delete them and then
     // re-install.
     function checkNPMDependencies (cb, projPath){
-
         function deleteRecursiveSync (itemPath){
             function walkRecursive (itemPath) {
                 if (fs.existsSync(itemPath)){
@@ -379,67 +391,136 @@ var capture = CaptureStdout ();
             walkRecursive (itemPath);
         }
 
-        var _package_json, _parsed_copy, _parsed_package, _package_copy;
-        if (!projPath){
-            _package_json = package_json;
-            _parsed_copy = parsed_copy;
-            _parsed_package = parsed_package;
-            _package_copy = package_copy;
-            projPath = appDir + '/';
-        }
-        else{
-            try { _package_copy = fs.readFileSync (projPath + "package.copy");}
-            catch (e) { _package_copy = null;}
-            try {_package_json = fs.readFileSync (projPath + "package.json");}
-            catch (e) { _package_json = null;}
-            _parsed_package = (_package_json) ? JSON.parse (_package_json) : null;
-            _parsed_copy = (_package_copy) ? JSON.parse (_package_copy) : null;
-        }
+        function checkAndLoadNPMChanges (cb) {
+            var _parsed_copy, _parsed_package;
+            if (!projPath) {
+                _parsed_copy = parsed_copy;
+                _parsed_package = parsed_package;
+                projPath = appDir + '/';
+            }
+            else {
+                _parsed_package = readJson (projPath + "package.copy");
+                _parsed_copy = readJson (projPath + "package.json");
+            }
 
-        console.log ("\nChecking for Node Module dependency changes for:" + projPath);
-        if (!_package_json){
-            console.log ("WARNING Your Application has no 'package.json' . It is highly" +
-                " recommended that you use one to manage your NPM dependencies");
-        }
-        else{ // delete the modules that have changed and re-install with new versions
-            if (!_package_copy || _package_copy.toString() !== _package_json.toString ()){
-                console.log ("\tNPM dependency changes detected");
-                if (_parsed_package && _parsed_package.dependencies){
-                    for (var package_name in _parsed_package.dependencies){
-                        var copy_version = (_parsed_copy && _parsed_copy.dependencies) ? _parsed_copy.dependencies[package_name] : "";
-                        if (copy_version !== _parsed_package.dependencies[package_name]){
-                            deleteRecursiveSync (projPath + "node_modules/" + package_name);
-                        }
-                    }
-                }
-                if (_parsed_copy && _parsed_copy.dependencies){
-                    for (package_name in _parsed_copy.dependencies){
-                        copy_version = (_parsed_package && _parsed_package.dependencies) ? _parsed_package.dependencies[package_name] : "";
-                        if (copy_version !== _parsed_copy.dependencies[package_name]){
-                            deleteRecursiveSync (projPath + "node_modules/" + package_name);
-                        }
-                    }
-                }
-                console.log ("\tInstalling new Node Modules");
-                var cmd_str = (projPath) ? "cd " + projPath + " ; " + sudo + "npm install -d" : sudo + "npm install -d";
-                var child = exec (cmd_str, function (err, std, ster){
-                    if (err){
-                        console.log ("\t\tError installing Node modules. Error:" + ster + " :" + err);
-                        pull_error += "\nError installing Node modules. Error:" + ster + " :" + err;
-                        fs.writeFileSync (projPath + "package.copy", _package_json);
-                    }
-                    else{
-                        console.log ("\t\tSuccessfully updated Node Modules: " + std);
-                        fs.writeFileSync (projPath + "package.copy", _package_json);
-                    }
-                    cb && cb ();
-                });
+            console.log("\nChecking for Node Module dependency changes for:" + projPath);
+            if (!_package_json) {
+                console.log("WARNING Your Application has no 'package.json' . It is highly" +
+                    " recommended that you use one to manage your NPM dependencies");
             }
-            else{
-                console.log ("\tNo node module changes detected");
+            else { // delete the modules that have changed and re-install with new versions
+                if (!_package_copy.str || (_package_copy.str !== _package_json.str)) {
+                    console.log("\tNPM dependency changes detected");
+                    if (_parsed_package && _parsed_package.json && _parsed_package.json.dependencies) {
+                        for (var package_name in _parsed_package.json.dependencies) {
+                            var copy_version = (_parsed_copy && _parsed_copy.dependencies) ? _parsed_copy.json.dependencies[package_name] : "";
+                            if (copy_version !== _parsed_package.json.dependencies[package_name]) {
+                                deleteRecursiveSync(projPath + "node_modules/" + package_name);
+                            }
+                        }
+                    }
+                    if (_parsed_copy && _parsed_copy.json && _parsed_copy.json.dependencies) {
+                        for (package_name in _parsed_copy.json.dependencies) {
+                            copy_version = (_parsed_package && _parsed_package.json && _parsed_package.json.dependencies) ?
+                                _parsed_package.json.dependencies[package_name] : "";
+                            if (copy_version !== _parsed_copy.json.dependencies[package_name]) {
+                                deleteRecursiveSync(projPath + "node_modules/" + package_name);
+                            }
+                        }
+                    }
+                    console.log("\tInstalling new Node Modules");
+                    var cmd_str = (projPath) ? "cd " + projPath + " ; " + sudo + "npm install -d" : sudo + "npm install -d";
+                    var child = exec(cmd_str, function (err, std, ster) {
+                        if (err) {
+                            console.log("\t\tError installing Node modules. Error:" + ster + " :" + err);
+                            pull_error += "\nError installing Node modules. Error:" + ster + " :" + err;
+                            fs.writeFileSync(projPath + "package.copy", _parsed_package.str);
+                        }
+                        else {
+                            console.log("\t\tSuccessfully updated Node Modules: " + std);
+                            fs.writeFileSync(projPath + "package.copy", _parsed_package.str);
+                        }
+                        cb && cb();
+                    });
+                }
+                else {
+                    console.log("\tNo node module changes detected");
+                    cb && cb();
+                }
+            }
+        }
+        function checkAndLoadBowerChanges (cb) {
+            var _parsed_copy, _parsed_package, dependencyPath;
+
+            // determine the bower path:
+            dependencyPath = (projPath) ? parseJson (projPath + '.bowerrc') : parseJson ('.bowerrc');
+            dependencyPath = (dependencyPath && dependencyPath.json && dependencyPath.json.directory) ?
+                dependencyPath.json.directory : "bower_components";
+            dependencyPath += '/';
+
+            if (!projPath) {
+                _parsed_copy = parsed_bowerCopy;
+                _parsed_package = parsed_bower;
+                projPath = appDir + '/';
+
+            }
+            else {
+                _parsed_package = parseJson (projPath + "bower.json");
+                _parsed_copy = parseJson (projPath + "bower.copy");
+            }
+
+            console.log("\nChecking for Bower dependency changes for:" + projPath);
+            if (!_package_json) {
+                console.log("WARNING Your Application has no 'bower.json' . It is highly" +
+                    " recommended that you use one to manage your client side dependencies");
+            }
+            else { // delete the modules that have changed and re-install with new versions
+                if (!_package_copy || (_package_copy.str !== _package_json.str)) {
+                    console.log("\Bower dependency changes detected");
+                    if (_parsed_package && _parsed_package.json && _parsed_package.json.dependencies) {
+                        for (var package_name in _parsed_package.json.dependencies) {
+                            var copy_version = (_parsed_copy && _parsed_copy.json && _parsed_copy.json.dependencies)
+                                ? _parsed_copy.json.dependencies[package_name] : "";
+                            if (copy_version !== _parsed_package.json.dependencies[package_name]) {
+                                deleteRecursiveSync(projPath + dependencyPath + package_name);
+                            }
+                        }
+                    }
+                    if (_parsed_copy && _parsed_copy.json && _parsed_copy.json.dependencies) {
+                        for (package_name in _parsed_copy.json.dependencies) {
+                            copy_version = (_parsed_package && _parsed_package.json.dependencies) ?
+                                _parsed_package.json.dependencies[package_name] : "";
+                            if (copy_version !== _parsed_copy.json.dependencies[package_name]) {
+                                deleteRecursiveSync(projPath + dependencyPath + package_name);
+                            }
+                        }
+                    }
+                    console.log("\tInstalling new Bower Modules");
+                    var cmd_str = (projPath) ? "cd " + projPath + " ; " + sudo + "bower install -d" : sudo + "bower install -d";
+                    var child = exec(cmd_str, function (err, std, ster) {
+                        if (err) {
+                            console.log("\t\tError installing Bower modules. Error:" + ster + " :" + err);
+                            pull_error += "\nError installing Bower modules. Error:" + ster + " :" + err;
+                            fs.writeFileSync(projPath + "bower.copy", _parsed_package.str);
+                        }
+                        else {
+                            console.log("\t\tSuccessfully updated Node Modules: " + std);
+                            fs.writeFileSync(projPath + "bower.copy", _parsed_package.str);
+                        }
+                        cb && cb();
+                    });
+                }
+                else {
+                    console.log("\tNo bower module changes detected");
+                    cb && cb();
+                }
+            }
+        }
+        checkAndLoadNPMChanges (function (){
+            checkAndLoadBowerChanges (function (){
                 cb && cb ();
-            }
-        }
+            });
+        });
     }
 
     function checkAllNPMDependencies (cb){

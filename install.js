@@ -322,7 +322,7 @@ async.waterfall ([
                             }
                             console.log ("Configuring the branch and pulling all dependencies....");
                             var cmdString = 'cd ' + configData.applicationDirectory + ' ; ' + configData.sudo + ' git checkout ' + configData.pullBranch +
-                                ' ; ' + configData.sudo + ' npm install -d ; sudo mkdir logs ; sudo chmod 755 logs';
+                                ' ; ' + configData.sudo + ' npm install -d ; sudo mkdir logs ; sudo chmod -R 0777 logs';
                             console.log("command string = " +cmdString);
                             child = exec (cmdString, function (err, std, ster){
                                 console.log (std);
