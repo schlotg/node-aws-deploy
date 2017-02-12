@@ -286,15 +286,15 @@ var capture = CaptureStdout ();
         }
         else {cb && cb ();}
     }
-    // check if any NPM dependencies changed
+    // check if any NPM dependencies change
     function checkNodeDependencies (cb, req, res){
 
         // read in our npm files
         console.log ("\nChecking for Node version changes");
-        parsed_package = readJSON ("package.copy");
-        parsed_copy = readJSON ("package.json");
-        parsed_bower = readJSON ("bower.copy");
-        parsed_bowerCopy = readJSON ("bower.json");
+        parsed_package = readJSON ("package.json");
+        parsed_copy = readJSON ("package.copy");
+        parsed_bower = readJSON ("bower.json");
+        parsed_bowerCopy = readJSON ("bower.copy");
 
         // see if our node versions match
         if (parsed_package && parsed_package.json && parsed_package.json.nodeVersion){
@@ -748,7 +748,8 @@ var capture = CaptureStdout ();
                 // change directory to the app working directory. Default to the current directory
                 var workingDirectory = configData.applicationDirectory || process.cwd();
                 console.log ("\nWorking Directory is:" + process.cwd());
-                process.chdir (workingDirectory);
+                try { process.chdir (workingDirectory) }
+                catch(e) {}
                 console.log ("Setting Working Directory to:" + process.cwd());
 
                 // determine if we are in the could or not and set an environment variable
